@@ -1,0 +1,4 @@
+record(ao, "hello")
+{
+	field(SCAN, "Passive")
+}

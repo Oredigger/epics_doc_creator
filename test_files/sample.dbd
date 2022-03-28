@@ -1,0 +1,18 @@
+menu(calcoutDOPT) {
+    choice(calcoutDOPT_Use_VAL, "Use CALC")
+    choice(calcoutDOPT_Use_OVAL, "Use OCAL")
+}
+menu(menuFtype) {
+    choice(menuFtypeSTRING, "STRING")
+    choice(menuFtypeCHAR, "CHAR")
+    choice(menuFtypeUCHAR, "UCHAR")
+    choice(menuFtypeSHORT, "SHORT")
+    choice(menuFtypeUSHORT, "USHORT")
+    choice(menuFtypeLONG, "LONG")
+    choice(menuFtypeULONG, "ULONG")
+    choice(menuFtypeINT64, "INT64")
+    choice(menuFtypeUINT64, "UINT64")
+    choice(menuFtypeFLOAT, "FLOAT")
+    choice(menuFtypeDOUBLE, "DOUBLE")
+    choice(menuFtypeENUM, "ENUM")
+}
