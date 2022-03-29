@@ -1,13 +1,30 @@
 #include "epics_dbd_parse.h"
+#include "parse_util.h"
+
 #include <fstream>
 #include <iostream>
-#include "parse_util.h"
 #include <sstream>
 
-enum dbd_states
+enum dbd_parse_lexer_states
 {
-    
-}
+    menutype,
+    include,
+    path,
+    addpath,
+    recordtype,
+    choice,
+    choice_name,
+    choice_value,
+    field,
+    field_name,
+    field_value,
+    left_paren,
+    right_paren,
+    left_curly,
+    right_curly,
+    comma,
+    double_quote
+};
 
 EPICS_DBD_parse::EPICS_DBD_parse(void)
 {

@@ -6,12 +6,13 @@
 #include <utility>
 
 // Project libraries
-#include "epics_dbd_parse.h"
+#include "epics_db_parse.h"
 #include "latex_generator.h"
 
 int main(int argc, char *argv[])
 {
-    EPICS_DBD_parse x("sample.dbd");
+    //EPICS_DBD_parse x("sample.dbd");
+    EPICS_DB_parse x("./test_files/sample.db");
 
     std::ofstream fout;
     fout.open("doc.tex", std::ofstream::out);

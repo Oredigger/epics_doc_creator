@@ -1,4 +1,39 @@
+record(stringout,FooWorld_PPort_AHmm) {
+    field(DOL,"FooWorld_PPort_AHmm_calc NPP NMS")
+    field(OMSL,"closed_loop")
+    field(FLNK,"FooWorld_PPort_AHmm_si")
+}
+record(stringout,"FooWorld_PPort_AHmm_so") {
+    field(DOL,"FooWorld_PPort_AHmm_calc NPP NMS")
+    field(OMSL,"closed_loop")
+    field(SCAN, Passive)
+    field(FLNK,"FooWorld_PPort_AHmm_si")
+}
+
 record(ao, "hello")
 {
-	field(SCAN, "Passive")
+        field(SCAN, "Passive")
+}
+
+record(ai, hmm)
+{
+        field(SCAN, "Passive")
+        field(VAL,   5.7)
+}
+
+record(calc,"FooWorld_PPort_AHmm_calc") {
+    field(DESC, "Counter")
+    field(SCAN, "Passive")
+    field(CALC, "(A<99)?(A+1):0")
+    field(CALC, "(A<99)?(A+1):0")
+    field(INPA,"FooWorld_PPort_AHmm_calc NPP NMS")
+    field(FLNK,"FooWorld_PPort_AHmm_so")
+    field(EGU, "Counts")
+    field(HOPR, "10")
+    field(FLNK,"FooWorld_PPort_AHmm_so")
+}
+
+record(stringin,"FooWorld_PPort_AHmm_si") {
+    field(DTYP,"asynOctetWriteRead")
+    field(INP,"@asyn(Port,Hmm) FooWorld_PPort_AHmm_so")
 }

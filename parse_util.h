@@ -2,7 +2,9 @@
 #define PARSE_UTIL_H
 
 #include <string>
+#include <queue>
 
-void remove_whitespace(std::string &r_str);
+void remove_all_char(std::string &r_str, char c);
+std::queue<size_t> get_all_char_pos(std::string r_str, char c);
 
 #endif

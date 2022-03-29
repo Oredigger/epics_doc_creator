@@ -1,14 +1,20 @@
 #include <algorithm>
 #include "parse_util.h"
-#include <cstring>
 
-void remove_whitespace(std::string &r_str)
+void remove_all_char(std::string &r_str, char c)
 {
-    char ch_unneeded[] = "   ";
-    size_t num_items = strlen(ch_unneeded);
+    r_str.erase(std::remove(r_str.begin(), r_str.end(), c), r_str.end());
+}
 
-    for (size_t i = 0; i < num_items; i++)
+std::queue<size_t> get_all_char_pos(std::string r_str, char c)
+{
+    std::queue<size_t> q_idx;
+
+    for (size_t i = 0; i < r_str.length(); i++)
     {
-        r_str.erase(std::remove(r_str.begin(), r_str.end(), ch_unneeded[i]), r_str.end());
+        if (r_str[i] == c)
+            q_idx.push(i);
     }
+
+    return q_idx;
 }
