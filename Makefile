@@ -15,7 +15,7 @@ all: $(OBJ)
 
 # Compiling source files into object files.
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR)
-	$(CC) $(CFLAGS) -c $< -o $@ -fPIC
+	$(CC) $(CFLAGS) -c $< -o $@ -g -fPIC
 
 $(OBJDIR):
 	mkdir -p $@
