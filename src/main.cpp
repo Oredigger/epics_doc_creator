@@ -6,8 +6,8 @@
 #include <utility>
 
 // Project libraries
-#include "epics_db_parse.h"
-#include "latex_generator.h"
+#include "epics_db_parse.hpp"
+#include "latex_gen.hpp"
 
 int main(int argc, char *argv[])
 {

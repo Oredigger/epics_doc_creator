@@ -1,12 +1,26 @@
+CC     := g++
+INCDIR := include
+CFLAGS := -I$(INCDIR)
+
+SRCDIR := src
+OBJDIR := build
+
+SRC := $(wildcard $(SRCDIR)/*.cpp)
+OBJ := $(SRC:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
+
 .PHONY: all clean
 
-all:
-	g++ -c main.cpp -g 
-	g++ -c epics_db_parse.cpp -g
-	#g++ -c epics_dbd_parse.cpp -g -I/home/awang/EPICS/epics-base/include
-	g++ -c parse_util.cpp -g
-	#g++ -L/home/awang/EPICS/epics-base/lib/linux-x86_64 -o main main.o epics_db_parse.o epics_dbd_parse.o parse_util.o -lCom 
-	g++ -o main main.o epics_db_parse.o parse_util.o
+all: $(OBJ)
+	$(CC) -o main $(OBJ)
+
+# Compiling source files into object files.
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR)
+	$(CC) $(CFLAGS) -c $< -o $@ -fPIC
+
+$(OBJDIR):
+	mkdir -p $@
+
+# Cleanup build and remove the executable file from the top directory.
+
 clean:
-	#rm epics_db_parse.o epics_dbd_parse.o main.o parse_util.o main
-	rm epics_dbd_parse.o main.o parse_util.o main
+	rm -rf $(OBJDIR)

@@ -1,5 +1,5 @@
-#include "epics_dbd_parse.h"
-#include "parse_util.h"
+#include "epics_dbd_parse.hpp"
+#include "parse_util.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -46,7 +46,10 @@ EPICS_DBD_parse::EPICS_DBD_parse(std::string fn)
             os << fin.rdbuf() << std::endl;
         
         r_str = os.str();
-        remove_whitespace(r_str);
+        
+        remove_all_char(r_str, '\t');
+        remove_all_char(r_str, ' ');
+        remove_all_char(r_str, '\r');
     }
 
     std::cout << r_str << std::endl;
