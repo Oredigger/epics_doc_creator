@@ -1,6 +1,3 @@
-#include "epics_db_parse.hpp"
-#include "parse_util.hpp"
-
 #include <algorithm>
 #include <cstring>
 #include <cctype>
@@ -8,6 +5,9 @@
 #include <iostream>
 #include <sstream>
 #include <tuple>
+
+#include "epics_db_parse.hpp"
+#include "parse_util.hpp"
 
 static std::string state_2_str(dpl_states state)
 {
@@ -33,6 +33,8 @@ static std::string state_2_str(dpl_states state)
             return "DOUBLE_QUOTE";
         case NEWLINE:
             return "NEWLINE";
+        case AT:
+            return "AT";
         case POUND:
             return "POUND";
         case COMMENT:
@@ -82,6 +84,9 @@ static void next_state(dpl_states &state, char next)
         case '\n':
             state = NEWLINE;
             break;
+        case '@':
+            state = AT;
+            break;
         case '#':
             state = POUND;
             break;
@@ -93,29 +98,17 @@ static void next_state(dpl_states &state, char next)
 
 static void ch_state(q_token &q_state, dpl_states &state, char next, char curr, size_t line_num)
 {
-    if (state == START)
-    {
-        next_state(state, curr);
-        q_state.push(std::make_tuple(state, std::string(1, curr), line_num));
-
-        if (state == POUND)
-            state = COMMENT;
-
-        next_state(state, next);
-        return;
-    }
-        
     q_state.push(std::make_tuple(state, std::string(1, curr), line_num));
 
     if (state == POUND)
     {
-        state = COMMENT;
+        state = (next == '\n') ? NEWLINE : COMMENT;
         return;
     }
     
     if (isalpha(next) || next == '_')
         state = (curr == '(') ? TYPE : (curr == ',' || curr == '"') ? VALUE : HEADER;
-    else if (isdigit(next) || next == '.')
+    else if (isdigit(next) || next == '.' || next == '@')
         state = VALUE;
     else
         next_state(state, next);
@@ -123,36 +116,83 @@ static void ch_state(q_token &q_state, dpl_states &state, char next, char curr, 
 
 static void push_state_clear_token(q_token &q_state, dpl_states &state, std::string &token, char next, size_t line_num)
 {
-    q_state.push(std::make_tuple(state, token, line_num));
+    auto prev_state = state;
     next_state(state, next);
-    token.clear();
+
+    if (prev_state != state)
+    {
+        q_state.push(std::make_tuple(prev_state, token, line_num));
+        token.clear();
+    }
 }
 
 static q_token parse_dft(std::string r_str)
 {
     remove_all_char(r_str, '\t');
-    remove_all_char(r_str, ' ');
     remove_all_char(r_str, '\r');
 
-    std::string token;
+    // Do not remove spaces in substrings that are surrounded by quotes.
+    std::queue<size_t> q_loc = get_all_char_pos(r_str, '"');
+    std::string f_str;
+
+    size_t q_idx_0 = 0, q_idx_1 = 0;
+
+    // Not the most optimal solution - however this prevents memory leaks and unconditional branching from 
+    // occurring though!
+    for (size_t i = 0; i < r_str.length(); i++)
+    {
+        if (i == q_idx_1)
+        {
+            if (q_loc.empty())
+            {
+                q_idx_1 = r_str.length() - 1;
+            }
+            else
+            {
+                q_idx_0 = q_loc.front();
+                q_loc.pop();
+
+                q_idx_1 = q_loc.front();
+                q_loc.pop();
+            }
+        }
+
+        if ((i <= q_idx_0 || i >= q_idx_1) && r_str[i] != ' ')
+            f_str += r_str[i];
+        else if (i > q_idx_0 && i < q_idx_1)
+            f_str += r_str[i];
+    }
+
     q_token q_state;
-    dpl_states curr_state = START;
+
+    if (f_str.empty())
+        return q_state;
+
+    dpl_states curr_state;
+
+    if (isalpha(f_str[0]) || isdigit(f_str[0]) || f_str[0] == '_')
+        curr_state = HEADER;
+    else    
+        next_state(curr_state, f_str[0]);
     
     bool is_equation = false, is_comment = false;
     size_t line_num = 1;
-    r_str += ' ';
+    
+    std::string token;
+    f_str += ' ';
 
-    for (size_t i = 0; i < r_str.length(); i++)
+    for (size_t i = 0; i < f_str.length() - 1; i++)
     {
-        char curr = r_str[i];
-        char next = r_str[i + 1];
+        char curr = f_str[i];
+        char next = f_str[i + 1];
 
         switch (curr_state)
         {
             case HEADER:
                 token += curr;
 
-                if (!isalpha(next) && !isdigit(next) && next != '_' && !is_comment)
+                if (!isalpha(next) && !isdigit(next) 
+                    && next != '_' && next != ':' && !is_comment)
                     push_state_clear_token(q_state, curr_state, token, next, line_num);
                 
                 break;
@@ -173,7 +213,8 @@ static q_token parse_dft(std::string r_str)
 
                 if (is_equation)
                 {
-                    if (next == '\n' || (!isalpha(next) && !isdigit(next) && !is_math_op(next)))
+                    if (next == '\n' || (!isalpha(next) && !isdigit(next) 
+                        && next != ':' && !is_math_op(next)))
                     {
                         push_state_clear_token(q_state, curr_state, token, next, line_num);
                         is_equation = false;
@@ -245,12 +286,16 @@ static q_token parse_dft(std::string r_str)
                 line_num++;
 
                 break;
+
+            case AT:
+                is_equation = true;
+                ch_state(q_state, curr_state, next, curr, line_num);
+
+                break;
             
             case POUND:
-                is_comment = true;
-                
+                is_comment = true;        
                 ch_state(q_state, curr_state, next, curr, line_num);
-                curr_state = COMMENT;
 
                 break;
 
@@ -259,22 +304,6 @@ static q_token parse_dft(std::string r_str)
 
                 if (next == '\n')
                     push_state_clear_token(q_state, curr_state, token, next, line_num);
-
-                break;
-
-            default:
-                if (isalpha(next) || isdigit(next) || next == '_')
-                {
-                    token += curr;
-                    curr_state = HEADER;
-                }
-                else if (i != r_str.length() - 1)
-                {
-                    ch_state(q_state, curr_state, next, curr, line_num);
-
-                    if (curr_state == POUND)
-                        is_comment = true;
-                }
 
                 break;
         }

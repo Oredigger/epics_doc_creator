@@ -1,0 +1,22 @@
+#
+#
+#
+# keysightOsc.template
+#
+# Template database for the Keysight Oscilloscope
+# Mehmet Bozdogan 25/03/2018
+#
+# substitutions:
+# sys    - system
+# sec    - section
+# dev    - device
+# port   - Ok device port
+#
+#
+################################################################################
+record(stringout, "Ok:Dbg")
+{
+	field(DESC, "hmm debug")
+	field(DTYP, "stream")
+	field(OUT,  "@keysightOsc.proto debug Ok")
+}

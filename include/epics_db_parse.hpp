@@ -17,6 +17,7 @@ enum dpl_states
     COMMA,
     DOUBLE_QUOTE,
     NEWLINE,
+    AT,
     POUND,
     COMMENT,
     INVALID,

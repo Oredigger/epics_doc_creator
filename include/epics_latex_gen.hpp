@@ -1,10 +1,9 @@
-#ifndef LATEX_GENERATOR_H
-#define LATEX_GENERATOR_H
+#ifndef EPICS_LATEX_GEN_H
+#define EPICS_LATEX_GEN_H
 
-static const std::string FILE_HEADER = "\\documentclass[12pt]{article}\n"
-                                       "\\usepackage{lingmacros}\n"
-                                       "\\usepackage{tree-dvips}\n"
-                                       "\\begin{document}\n"
-                                       "\\end{document}\n";
+#include <string>
+#include "epics_db_parse.hpp"
+
+void gen_latex_doc(std::string fn, q_token q_state);
 
 #endif

@@ -1,0 +1,78 @@
+record(stringin, "SCOPE:ID") {
+    field(INP , "@hp3458a.proto idn 5600")
+    field(SDIS, "SCOPE:RUN")
+    field(DISV, "5.7") # disable while Paused
+    field(DTYP, "stream")
+    field(SCAN, "10 second")
+    field(FLNK, "SCOPE:ERR")
+    field(TPRO, "1")
+}
+
+record(longin, "SCOPE:ERR") {
+    field(DTYP, "stream")
+    field(INP , "@hp3458a.proto err 5600")
+    field(FLNK, "SCOPE:ERRMSG")
+    field(TPRO, "1")
+}
+
+record(stringin, "SCOPE:ERRMSG") {
+    field(DTYP, "stream")
+    field(INP , "@hp3458a.proto errstr 5600")
+    field(TPRO, "1")
+}
+
+record(bo, "SCOPE:RUN") {
+    field(ZNAM, "Pause")
+    field(ONAM, "Sample")
+    field(FLNK, "SCOPE:RUNx")
+    field(TPRO, "1")
+}
+
+record(fanout, "SCOPE:RUNx") {
+    field(LNK1, "SCOPE:DISx")
+    field(LNK2, "SCOPE:ENAx")
+    field(TPRO, "1")
+}
+
+record(bo, "SCOPE:ENAx") {
+    field(SDIS, "SCOPE:RUN")
+    field(DISV, "0") # disable while Paused
+    field(DTYP, "stream")
+    field(OUT , "@hp3458a.proto setup 5600")
+    field(TPRO, "1")
+    field(FLNK, "SCOPE:I.PROC CA") # start first measurement
+}
+
+record(bo, "SCOPE:DISx") {
+    field(SDIS, "SCOPE:RUN")
+    field(DISV, "1") # disable while Sampling
+    field(DTYP, "stream")
+    field(OUT , "@hp3458a.proto detach 5600")
+    field(TPRO, "1")
+}
+
+
+record(ai, "SCOPE:I") {
+    field(SDIS, "SCOPE:RUN NPP")
+    field(DISV, "0") # disable while Paused
+    field(DTYP, "stream")
+    field(INP , "@hp3458a.proto sample 5600")
+    field(EGU , "A")
+    field(PREC, "9")
+    field(FLNK, "SCOPE:CNT")
+    field(TPRO, "1")
+}
+
+record(calc, "SCOPE:CNT") {
+    field(CALC, "VAL+1")
+    field(FLNK, "SCOPE:I.PROC CA") # loop back
+}
+
+record(calc, "SCOPE:RATE") {
+    field(DESC, "Update rate")
+    field(INPA, "SCOPE:CNT NPP")
+    field(CALC, "C:=A-B;B:=A;C/10")
+    field(SCAN, "10 second")
+    field(EGU , "Hz")
+    field(PREC, "1")
+}
