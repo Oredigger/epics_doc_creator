@@ -5,20 +5,36 @@
 #include <string>
 #include <queue>
 
-struct DB_record_inst
+enum dpl_states
 {
-    std::string recordinst_name;
-    std::string recordtype_name;
-    std::map<std::string, std::string> field;
+    HEADER,
+    TYPE,
+    VALUE,
+    LEFT_PAREN,
+    RIGHT_PAREN,
+    LEFT_CURLY,
+    RIGHT_CURLY,
+    COMMA,
+    DOUBLE_QUOTE,
+    NEWLINE,
+    POUND,
+    COMMENT,
+    INVALID,
+    START
 };
+
+typedef std::queue<std::tuple<dpl_states, std::string, size_t>> q_token;
 
 class EPICS_DB_parse
 {
     private:
-        std::queue<DB_record_inst> q_inst;
+        q_token q_state;
     public:
         EPICS_DB_parse(void);
         EPICS_DB_parse(std::string fn);
+
+        q_token get_q_state(void);
+        void print_q_state(void);
 };
 
 short check_calc_eq(std::string pinfix);

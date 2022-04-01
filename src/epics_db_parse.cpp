@@ -9,34 +9,6 @@
 #include <sstream>
 #include <tuple>
 
-enum dpl_states
-{
-    HEADER,
-    TYPE,
-    VALUE,
-    LEFT_PAREN,
-    RIGHT_PAREN,
-    LEFT_CURLY,
-    RIGHT_CURLY,
-    COMMA,
-    DOUBLE_QUOTE,
-    NEWLINE,
-    INVALID
-};
-
-static const std::string math_op = "()e-+*/%^><=&|!~?:";
-
-static bool is_math_op(char next)
-{
-    for (auto c : math_op)
-    {
-        if (next == c)
-            return true;
-    }
-
-    return false;
-}
-
 static std::string state_2_str(dpl_states state)
 {
     switch (state)
@@ -61,12 +33,31 @@ static std::string state_2_str(dpl_states state)
             return "DOUBLE_QUOTE";
         case NEWLINE:
             return "NEWLINE";
+        case POUND:
+            return "POUND";
+        case COMMENT:
+            return "COMMENT";
+        case START:
+            return "START";
     }
 
     return "INVALID";
 }
 
-void next_state(dpl_states &state, char next)
+static const std::string math_op = "()e-+*/%^><=&|!~?:";
+
+static bool is_math_op(char next)
+{
+    for (auto c : math_op)
+    {
+        if (next == c)
+            return true;
+    }
+
+    return false;
+}
+
+static void next_state(dpl_states &state, char next)
 {
     switch (next)
     {
@@ -91,21 +82,39 @@ void next_state(dpl_states &state, char next)
         case '\n':
             state = NEWLINE;
             break;
+        case '#':
+            state = POUND;
+            break;
         default:
-            if (state != VALUE)
-                state = INVALID;
+            if (state != VALUE && state != COMMENT) state = INVALID;
             break;
     }
 }
 
-typedef std::queue<std::tuple<dpl_states, std::string, size_t>> q_token;
-
 static void ch_state(q_token &q_state, dpl_states &state, char next, char curr, size_t line_num)
 {
+    if (state == START)
+    {
+        next_state(state, curr);
+        q_state.push(std::make_tuple(state, std::string(1, curr), line_num));
+
+        if (state == POUND)
+            state = COMMENT;
+
+        next_state(state, next);
+        return;
+    }
+        
     q_state.push(std::make_tuple(state, std::string(1, curr), line_num));
-                
+
+    if (state == POUND)
+    {
+        state = COMMENT;
+        return;
+    }
+    
     if (isalpha(next) || next == '_')
-        state = (curr == '(') ? TYPE : (curr == ',') ? VALUE : HEADER;
+        state = (curr == '(') ? TYPE : (curr == ',' || curr == '"') ? VALUE : HEADER;
     else if (isdigit(next) || next == '.')
         state = VALUE;
     else
@@ -119,19 +128,17 @@ static void push_state_clear_token(q_token &q_state, dpl_states &state, std::str
     token.clear();
 }
 
-static std::queue<DB_record_inst> parse_dft(std::string r_str)
+static q_token parse_dft(std::string r_str)
 {
-    std::queue<DB_record_inst> q_inst;
-    q_token q_state;
-
     remove_all_char(r_str, '\t');
     remove_all_char(r_str, ' ');
     remove_all_char(r_str, '\r');
 
     std::string token;
-    dpl_states curr_state = HEADER;
+    q_token q_state;
+    dpl_states curr_state = START;
     
-    bool is_equation = false;
+    bool is_equation = false, is_comment = false;
     size_t line_num = 1;
     r_str += ' ';
 
@@ -145,7 +152,7 @@ static std::queue<DB_record_inst> parse_dft(std::string r_str)
             case HEADER:
                 token += curr;
 
-                if (!isalpha(next) && !isdigit(next) && next != '_')
+                if (!isalpha(next) && !isdigit(next) && next != '_' && !is_comment)
                     push_state_clear_token(q_state, curr_state, token, next, line_num);
                 
                 break;
@@ -153,7 +160,7 @@ static std::queue<DB_record_inst> parse_dft(std::string r_str)
             case TYPE:
                 token += curr;
                 
-                if (!isalpha(next) && !isdigit(next) && next != '_')
+                if (!isalpha(next) && !isdigit(next) && next != '_' && !is_comment)
                 {
                     is_equation = (token == "CALC");
                     push_state_clear_token(q_state, curr_state, token, next, line_num);
@@ -166,8 +173,7 @@ static std::queue<DB_record_inst> parse_dft(std::string r_str)
 
                 if (is_equation)
                 {
-                    if (next == '\n'
-                        || (!isalpha(next) && !isdigit(next) && !is_math_op(next)))
+                    if (next == '\n' || (!isalpha(next) && !isdigit(next) && !is_math_op(next)))
                     {
                         push_state_clear_token(q_state, curr_state, token, next, line_num);
                         is_equation = false;
@@ -176,8 +182,8 @@ static std::queue<DB_record_inst> parse_dft(std::string r_str)
                 else
                 {
                     if (!isalpha(next) && !isdigit(next) 
-                        && next != '-' && next != '_' 
-                        && next != '.' && next != 'e' && next != 'E')
+                        && next != '-' && next != '_' && next != '.' 
+                        && next != 'e' && next != 'E' && !is_comment)
                         push_state_clear_token(q_state, curr_state, token, next, line_num);
                 }
 
@@ -186,21 +192,37 @@ static std::queue<DB_record_inst> parse_dft(std::string r_str)
             case LEFT_PAREN:
                 if (!is_equation)
                     ch_state(q_state, curr_state, next, curr, line_num);
+                
+                if (is_equation && curr_state != VALUE)
+                    curr_state = VALUE;
 
                 break;
             
             case RIGHT_PAREN:
                 if (!is_equation)
                     ch_state(q_state, curr_state, next, curr, line_num);
+
+                if (is_equation && curr_state != VALUE)
+                    curr_state = VALUE;
                 
                 break;
             
             case LEFT_CURLY:
-                ch_state(q_state, curr_state, next, curr, line_num);
+                if (!is_equation)
+                    ch_state(q_state, curr_state, next, curr, line_num);
+
+                if (is_equation && curr_state != VALUE)
+                    curr_state = VALUE;
+
                 break;
             
             case RIGHT_CURLY:
-                ch_state(q_state, curr_state, next, curr, line_num);
+                if (!is_equation)
+                    ch_state(q_state, curr_state, next, curr, line_num);
+
+                if (is_equation && curr_state != VALUE)
+                    curr_state = VALUE;
+
                 break;
             
             case COMMA:
@@ -209,49 +231,61 @@ static std::queue<DB_record_inst> parse_dft(std::string r_str)
 
             case DOUBLE_QUOTE:
                 ch_state(q_state, curr_state, next, curr, line_num);
-                
-                if (is_equation)
+
+                if (is_equation && curr_state != VALUE)
                     curr_state = VALUE;
 
                 break;
 
             case NEWLINE:
+                is_comment = false;
+                is_equation = false;
+
                 ch_state(q_state, curr_state, next, curr, line_num);
                 line_num++;
 
                 break;
+            
+            case POUND:
+                is_comment = true;
+                
+                ch_state(q_state, curr_state, next, curr, line_num);
+                curr_state = COMMENT;
+
+                break;
+
+            case COMMENT:
+                token += curr;
+
+                if (next == '\n')
+                    push_state_clear_token(q_state, curr_state, token, next, line_num);
+
+                break;
 
             default:
-                // Account for stray characters here.
-                token += curr;
-                
                 if (isalpha(next) || isdigit(next) || next == '_')
+                {
+                    token += curr;
                     curr_state = HEADER;
+                }
+                else if (i != r_str.length() - 1)
+                {
+                    ch_state(q_state, curr_state, next, curr, line_num);
+
+                    if (curr_state == POUND)
+                        is_comment = true;
+                }
 
                 break;
         }
     }
-         
-    while (!q_state.empty())
-    {
-        auto elem = q_state.front();
-        std::string token = (std::get<0>(elem) == NEWLINE) ? 
-                            "\\n" : std::get<1>(elem);
 
-        std::cout << state_2_str(std::get<0>(elem)) << "  " << token << "  " << std::get<2>(elem) << std::endl;
-        
-        if (std::get<0>(elem) == NEWLINE)
-            std::cout << "\n";
-
-        q_state.pop();
-    }
-
-    return q_inst;
+    return q_state;
 }
 
 EPICS_DB_parse::EPICS_DB_parse(void)
 {
-    q_inst = std::queue<DB_record_inst>();
+    q_state = q_token();
 }
 
 EPICS_DB_parse::EPICS_DB_parse(std::string fn)
@@ -272,7 +306,31 @@ EPICS_DB_parse::EPICS_DB_parse(std::string fn)
     }
 
     fin.close();
-    q_inst = parse_dft(r_str);
+    q_state = parse_dft(r_str);
+}
+
+void EPICS_DB_parse::print_q_state(void)
+{
+    q_token q_copy = q_state;
+
+    while (!q_copy.empty())
+    {
+        auto elem = q_copy.front();
+        std::string token = (std::get<0>(elem) == NEWLINE) ? 
+                            "\\n" : std::get<1>(elem);
+
+        std::cout << state_2_str(std::get<0>(elem)) << "  " << token << "  " << std::get<2>(elem) << std::endl;
+        
+        if (std::get<0>(elem) == NEWLINE)
+            std::cout << "\n";
+
+        q_copy.pop();
+    }
+}
+
+q_token EPICS_DB_parse::get_q_state(void)
+{
+    return q_state;
 }
 
 /*short check_calc_eq(std::string pinfix)
