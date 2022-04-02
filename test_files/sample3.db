@@ -1,200 +1,29 @@
-
-
-
-# 
-# 
-# 
-# keysightOsc.template
-# Template database for the Keysight Oscilloscope
-# Mehmet Bozdogan 25/03/2018
+                                          ()<
+]
+# Test this comment
 #
-# substitutions:
-# sys    - system
-# sec    - section
-# dev    - device
-# port   - Ok device port
-#
-#
-################################################################################
-record(ai, "Ok:Ch1sVrms"zcx)
+   d
+record (ai, "PS1:I-get")
 {
-	field(INP "@@@s(CHAN1) Ok",sdf)
+    field (DESC, "Read current of PS1")
+    field (DTYP, "stream")
+    field (INP,  "@ExamplePS.proto getCurrent PS1")
+    field (EGU,  "A")
+    field (PREC, "2")
+    field (LOPR, "0")
+    field (HOPR, "60")
+    field (PINI, "YES")
+    field (SCAN, "10 second")
 }
-
-record(stringout, "Ok:Dbg")
+record (ao, "PS1:I-set")
 {
-	field(DESC, "hmm debug") field(DTYP, "stream") field(OUT,  "@keysightOsc.proto debug Ok")
-}
-
-record(calc, "hmm")
-{
-	field(CALC, "A+B/2 + 6*100")
-	sdfjl()
-}
-
-record(bo, "Ok:Init")
-{
-    field(DESC, "hmm initialize")
-    field(DTYP, "stream")
-    field(OUT, "@keysightOsc.proto init Ok")
-	field(PINI, "YES")
-	field(FLNK, "Ok:XAxisFill")
-}
-
-record(acalcout, "Ok:XAxisFill")
-{
-    field(DESC, "hmm X axis fill array")
-    field(CALC, "IX")
-    field(OUT, "Ok:XAxis")
-    field(NELM, "arrlen")
-}
-
-record(seq, "Ok:AutoScaleTrigOn")
-{
-	field(DLY1,"0")
-	field(DOL1,"1")
-	field(LNK1,"Ok:TrigDis PP NMS")
-	field(DLY2,"1")
-	field(DOL2,"1")
-	field(LNK2,"Ok:AutoScale PP NMS")
-}
-
-record(seq, "Ok:AutoScaleTrigOff")
-{
-	field(DLY1,"0")
-	field(DOL1,"0")
-	field(LNK1,"Ok:TrigDis PP NMS")
-}
-
-record(bo, "Ok:TrigDis")
-{
-	field(VAL, "1")
-    field(ZNAM, "Active")
-    field(ONAM, "Passive")
-}
-
-record(bo, "Ok:AutoScale")
-{
-    field(DESC, "hmm autoscale")
-    field(DTYP, "stream")
-    field(OUT, "@keysightOsc.proto autoScale Ok")
-	field(FLNK, "Ok:XInc")
-}
-
-record(ai, "Ok:XInc")
-{
-    field(DESC, "hmm X increment")
-    field(DTYP, "stream")
-    field(INP, "@keysightOsc.proto xIncrementGet Ok")
-	field(EGU, "Second")
-	field(FLNK, "Ok:XCalc")
-}
-
-record(acalcout, "Ok:XCalc")
-{
-        field(DESC, "hmm X calculate times")
-        field(INPA, "Ok:XInc")
-        field(CALC, "A*IX")
-	field(NELM, "arrlen")
-        field(OUT, "Ok:XAxis PP")
-}
-
-record(waveform, "Ok:XAxis")
-{
-        field(DESC, "hmm X axis array")
-        field(DTYP, "Soft Channel")
-        field(FTVL, "DOUBLE")
-        field(NELM, "arrlen")
-        field(EGU, "Second")
-	field(FLNK, "Ok:AutoScaleTrigOff")
-}
-
-record(bi, "Ok:Trig")
-{
-        field(DESC, "hmm trig")
-        field(DTYP, "stream")
-	field(SDIS, "Ok:TrigDis")
-        field(INP, "@keysightOsc.proto trig Ok")
-        field(SCAN, "1 second")
-	field(FLNK, "Ok:Ch1")
-        field(DISS, "MAJOR")
-}
-
-record(waveform, "Ok:Ch1")
-{
-	field(DESC, "hmm channel 1 measurement")
-	field(DTYP, "stream")
-	field(INP, "@keysightOsc.proto measWav(CHAN1) Ok")
-	field(FTVL, "DOUBLE")
-	field(NELM, "arrlen")
-	field(FLNK, "Ok:Ch1sVrms")
-	field(EGU, "Volt")
-}
-
-record(waveform, "Ok:Ch2")
-{
-        field(DESC, "hmm channel 2 measurement")
-        field(DTYP, "stream")
-        field(INP, "@keysightOsc.proto measWav(CHAN2) Ok")
-        field(FTVL, "DOUBLE")
-        field(NELM, "arrlen")
-	field(FLNK, "Ok:Ch2sVrms")
-	field(EGU, "Volt")
-}
-
-record(ai, "Ok:Ch2sVrms")
-{
-	field(DESC, "hmm channel 2 Vrms measurment")
-	field(DTYP, "stream")
-	field(INP, "@keysightOsc.proto measVrms(CHAN2) Ok")
-	field(FLNK, "Ok:Ch4sCh3sPhasDiff")
-	field(EGU, "Volt")
-}
-
-record(ai, "Ok:Ch4sCh3sPhasDiff")
-{
-	field(DESC, "hmm ch 4 - ch 3 phase difference")
-	field(DTYP, "stream")
-	field(INP, "@keysightOsc.proto measPhas(CHAN4,CHAN3) Ok")
-	field(FLNK, "Ok:Ch3")
-	field(EGU, "Degree")
-}
-
-record(waveform, "Ok:Ch3")
-{
-        field(DESC, "hmm channel 3 measurement")
-        field(DTYP, "stream")
-        field(INP, "@keysightOsc.proto measWav(CHAN3) Ok")
-        field(FTVL, "DOUBLE")
-        field(NELM, "arrlen")
-	field(FLNK, "Ok:Ch3sVpp")
-	field(EGU, "Volt")
-}
-
-record(ai, "Ok:Ch3sVpp")
-{
-	field(DESC, "hmm channel 3 Vpp measurment")
-	field(DTYP, "stream")
-	field(INP, "@keysightOsc.proto measVpp(CHAN3) Ok")
-	field(FLNK, "Ok:Ch4")
-	field(EGU, "Volt")
-}
-
-record(waveform, "Ok:Ch4")
-{
-        field(DESC, "hmm channel 4 measurement")
-        field(DTYP, "stream")
-        field(INP, "@keysightOsc.proto measWav(CHAN4) Ok")
-        field(FTVL, "DOUBLE")
-        field(NELM, "arrlen")
-	field(FLNK, "Ok:Ch4sVpp")
-	field(EGU, "Volt")
-}
-
-record(ai, "Ok:Ch4sVpp")
-{
-	field(DESC, "hmm channel 4 Vpp measurment")
-	field(DTYP, "stream")
-	field(INP, "@keysightOsc.proto measVpp(CHAN4) Ok")
-	field(EGU, "Volt")
+    field (DESC, "Set current of PS1")
+    field (DTYP, "stream")
+    field (OUT,  "@ExamplePS.proto setCurrent PS1")
+    field (EGU,  "A")
+ field (PREC, "2")
+    field (DRVL, "0")
+    field (DRVH, "60")
+    field (LOPR, "0")
+                  field (HOPR, "60")
 }

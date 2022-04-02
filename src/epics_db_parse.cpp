@@ -39,11 +39,9 @@ static std::string state_2_str(dpl_states state)
             return "POUND";
         case COMMENT:
             return "COMMENT";
-        case START:
-            return "START";
+        default:
+            return "INVALID";
     }
-
-    return "INVALID";
 }
 
 static const std::string math_op = "()e-+*/%^><=&|!~?:., ";
@@ -103,25 +101,32 @@ static void ch_state(q_token &q_state, dpl_states &state, char next, char curr, 
     if (state == POUND)
     {
         state = (next == '\n') ? NEWLINE : COMMENT;
-        return;
     }
-    
-    if (state == AT)
+    else if (state == AT)
     {
         if (isalpha(next) || isdigit(next) || next == '_')
             state = VALUE;
         else
             next_state(state, next);
-        
-        return;
     }
-
-    if (isalpha(next) || next == '_')
-        state = (curr == '(') ? TYPE : (curr == ',' || curr == '"') ? VALUE : HEADER;
-    else if (isdigit(next) || next == '.')
-        state = VALUE;
     else
-        next_state(state, next);
+    {
+        if (isalpha(next) || next == '_')
+        {
+            if (curr == '(')
+                state = TYPE;
+            else
+                state = (curr == ',' || curr == '"') ? VALUE : HEADER;
+        }
+        else if (isdigit(next) || next == '.')
+        {
+            state = VALUE;
+        }
+        else
+        {
+            next_state(state, next);
+        }
+    }
 }
 
 static void push_state_clear_token(q_token &q_state, dpl_states &state, std::string &token, char next, size_t line_num)
@@ -138,61 +143,32 @@ static void push_state_clear_token(q_token &q_state, dpl_states &state, std::str
 
 static q_token parse_dft(std::string r_str)
 {
-    remove_all_char(r_str, '\t');
-    remove_all_char(r_str, '\r');
-
-    // Do not remove spaces in substrings that are surrounded by quotes.
-    std::queue<size_t> q_loc = get_all_char_pos(r_str, '"');
-    std::string f_str;
-
-    size_t q_idx_0 = 0, q_idx_1 = 0;
-
-    // Not the most optimal solution - however this prevents memory leaks and unconditional branching from 
-    // occurring though!
-    for (size_t i = 0; i < r_str.length(); i++)
-    {
-        if (i == q_idx_1)
-        {
-            if (q_loc.empty())
-            {
-                q_idx_1 = r_str.length() - 1;
-            }
-            else
-            {
-                q_idx_0 = q_loc.front();
-                q_loc.pop();
-
-                q_idx_1 = q_loc.front();
-                q_loc.pop();
-            }
-        }
-
-        if ((i <= q_idx_0 || i >= q_idx_1) && r_str[i] != ' ')
-            f_str += r_str[i];
-        else if (i > q_idx_0 && i < q_idx_1)
-            f_str += r_str[i];
-    }
-
     q_token q_state;
+    std::string f_str = prep_r_str(r_str);
 
-    if (f_str.empty())
+    if (f_str.length() < 2)
         return q_state;
 
-    dpl_states curr_state;
+    dpl_states curr_state = HEADER;
+    std::string token;
 
-    if (isalpha(f_str[0]) || isdigit(f_str[0]) || f_str[0] == '_')
-        curr_state = HEADER;
-    else    
-        next_state(curr_state, f_str[0]);
-    
     bool is_equation = false, is_comment = false;
     size_t line_num = 1;
-    
-    std::string token;
-    f_str += ' ';
-    std::cout << f_str.length() << std::endl;
 
-    for (size_t i = 0; i < f_str.length() - 1; i++)
+    if (!isalpha(f_str[0]) && !isdigit(f_str[0]) && f_str[0] != '_')   
+    {
+        next_state(curr_state, f_str[0]);
+        ch_state(q_state, curr_state, f_str[1], f_str[0], line_num);
+        line_num += (curr_state == NEWLINE); 
+    }
+    else
+    {
+        token += f_str[0];
+    }
+
+    f_str += ' ';
+
+    for (size_t i = 1; i < f_str.length() - 1; i++)
     {
         char curr = f_str[i];
         char next = f_str[i + 1];
@@ -317,6 +293,10 @@ static q_token parse_dft(std::string r_str)
                     push_state_clear_token(q_state, curr_state, token, next, line_num);
 
                 break;
+
+            default:
+                ch_state(q_state, curr_state, next, curr, line_num);
+                break;
         }
     }
 
@@ -330,24 +310,12 @@ EPICS_DB_parse::EPICS_DB_parse(void)
 
 EPICS_DB_parse::EPICS_DB_parse(std::string fn)
 {
-    std::string r_str;
-    std::ifstream fin;
+    load_file(fn);
+}
 
-    fin.open(fn, std::ifstream::in);
-
-    if (fin.good())
-    {
-        std::ostringstream os;
-
-        if (os.good())
-        {
-            os << fin.rdbuf() << std::endl;
-            r_str = os.str();
-        }
-    }
-
-    fin.close();
-    q_state = parse_dft(r_str);
+q_token EPICS_DB_parse::get_q_state(void)
+{
+    return q_state;
 }
 
 void EPICS_DB_parse::print_q_state(void)
@@ -369,9 +337,32 @@ void EPICS_DB_parse::print_q_state(void)
     }
 }
 
-q_token EPICS_DB_parse::get_q_state(void)
+void EPICS_DB_parse::load_file(std::string fn)
 {
-    return q_state;
+    if (!q_state.empty())
+    {
+        q_token empty;
+        q_state.swap(empty);
+    }
+
+    std::string r_str;
+    std::ifstream fin;
+
+    fin.open(fn, std::ifstream::in);
+
+    if (fin.good())
+    {
+        std::ostringstream os;
+
+        if (os.good())
+        {
+            os << fin.rdbuf() << std::endl;
+            r_str = os.str();
+        }
+    }
+
+    fin.close();
+    q_state = parse_dft(r_str);
 }
 
 /*short check_calc_eq(std::string pinfix)

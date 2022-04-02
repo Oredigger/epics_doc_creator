@@ -21,7 +21,6 @@ enum dpl_states
     POUND,
     COMMENT,
     INVALID,
-    START
 };
 
 typedef std::queue<std::tuple<dpl_states, std::string, size_t>> q_token;
@@ -36,6 +35,7 @@ class EPICS_DB_parse
 
         q_token get_q_state(void);
         void print_q_state(void);
+        void load_file(std::string fn);
 };
 
 short check_calc_eq(std::string pinfix);

@@ -11,9 +11,17 @@
 
 int main(int argc, char *argv[])
 {
-    EPICS_DB_parse x("./test_files/sample3.db");
+    if (argc <= 1)
+        return EXIT_FAILURE;
+
+    for (int i = 0; i < argc - 1; i++)
+    {
+        std::cout << argv[i + 1] << std::endl;
+    }
+
+    EPICS_DB_parse x(argv[1]);
     x.print_q_state();
     gen_latex_doc("hmm", x.get_q_state());
-
-    return 0;
+    
+    return EXIT_SUCCESS;
 }
