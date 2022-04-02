@@ -76,3 +76,4 @@ record(calc, "SCOPE:RATE") {
     field(EGU , "Hz")
     field(PREC, "1")
 }
+

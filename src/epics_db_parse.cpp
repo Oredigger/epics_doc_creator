@@ -46,7 +46,7 @@ static std::string state_2_str(dpl_states state)
     return "INVALID";
 }
 
-static const std::string math_op = "()e-+*/%^><=&|!~?:";
+static const std::string math_op = "()e-+*/%^><=&|!~?:., ";
 
 static bool is_math_op(char next)
 {
@@ -106,9 +106,19 @@ static void ch_state(q_token &q_state, dpl_states &state, char next, char curr, 
         return;
     }
     
+    if (state == AT)
+    {
+        if (isalpha(next) || isdigit(next) || next == '_')
+            state = VALUE;
+        else
+            next_state(state, next);
+        
+        return;
+    }
+
     if (isalpha(next) || next == '_')
         state = (curr == '(') ? TYPE : (curr == ',' || curr == '"') ? VALUE : HEADER;
-    else if (isdigit(next) || next == '.' || next == '@')
+    else if (isdigit(next) || next == '.')
         state = VALUE;
     else
         next_state(state, next);
@@ -180,6 +190,7 @@ static q_token parse_dft(std::string r_str)
     
     std::string token;
     f_str += ' ';
+    std::cout << f_str.length() << std::endl;
 
     for (size_t i = 0; i < f_str.length() - 1; i++)
     {
@@ -329,9 +340,10 @@ EPICS_DB_parse::EPICS_DB_parse(std::string fn)
         std::ostringstream os;
 
         if (os.good())
+        {
             os << fin.rdbuf() << std::endl;
-        
-        r_str = os.str();
+            r_str = os.str();
+        }
     }
 
     fin.close();

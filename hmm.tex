@@ -1,8 +1,147 @@
 \documentclass[12pt]{article}
 \begin{document}
+\section{Ok:Ch1sVrms}
+{zcx}
+\textbf{INP: }s(CHAN1) Ok \\
+sdf \\
+\newpage
 \section{Ok:Dbg}
 \textbf{DESC: }hmm debug \\
 \textbf{DTYP: }stream \\
-\textbf{OUT: }@keysightOsc.proto debug Ok \\
+\textbf{OUT: }keysightOsc.proto debug Ok \\
+\newpage
+\section{hmm}
+\textbf{CALC: }A+B/2 + 6*100 \\
+\newpage
+\section{Ok:Init}
+\textbf{DESC: }hmm initialize \\
+\textbf{DTYP: }stream \\
+\textbf{OUT: }keysightOsc.proto init Ok \\
+\textbf{PINI: }YES \\
+\textbf{FLNK: }Ok:XAxisFill \\
+\newpage
+\section{Ok:XAxisFill}
+\textbf{DESC: }hmm X axis fill array \\
+\textbf{CALC: }IX \\
+\textbf{OUT: }Ok:XAxis \\
+\textbf{NELM: }arrlen \\
+\newpage
+\section{Ok:AutoScaleTrigOn}
+\textbf{DLY1: }0 \\
+\textbf{DOL1: }1 \\
+\textbf{LNK1: }Ok:TrigDis PP NMS \\
+\textbf{DLY2: }1 \\
+\textbf{DOL2: }1 \\
+\textbf{LNK2: }Ok:AutoScale PP NMS \\
+\newpage
+\section{Ok:AutoScaleTrigOff}
+\textbf{DLY1: }0 \\
+\textbf{DOL1: }0 \\
+\textbf{LNK1: }Ok:TrigDis PP NMS \\
+\newpage
+\section{Ok:TrigDis}
+\textbf{VAL: }1 \\
+\textbf{ZNAM: }Active \\
+\textbf{ONAM: }Passive \\
+\newpage
+\section{Ok:AutoScale}
+\textbf{DESC: }hmm autoscale \\
+\textbf{DTYP: }stream \\
+\textbf{OUT: }keysightOsc.proto autoScale Ok \\
+\textbf{FLNK: }Ok:XInc \\
+\newpage
+\section{Ok:XInc}
+\textbf{DESC: }hmm X increment \\
+\textbf{DTYP: }stream \\
+\textbf{INP: }keysightOsc.proto xIncrementGet Ok \\
+\textbf{EGU: }Second \\
+\textbf{FLNK: }Ok:XCalc \\
+\newpage
+\section{Ok:XCalc}
+\textbf{DESC: }hmm X calculate times \\
+\textbf{INPA: }Ok:XInc \\
+\textbf{CALC: }A*IX \\
+\textbf{NELM: }arrlen \\
+\textbf{OUT: }Ok:XAxis PP \\
+\newpage
+\section{Ok:XAxis}
+\textbf{DESC: }hmm X axis array \\
+\textbf{DTYP: }Soft Channel \\
+\textbf{FTVL: }DOUBLE \\
+\textbf{NELM: }arrlen \\
+\textbf{EGU: }Second \\
+\textbf{FLNK: }Ok:AutoScaleTrigOff \\
+\newpage
+\section{Ok:Trig}
+\textbf{DESC: }hmm trig \\
+\textbf{DTYP: }stream \\
+\textbf{SDIS: }Ok:TrigDis \\
+\textbf{INP: }keysightOsc.proto trig Ok \\
+\textbf{SCAN: }1 second \\
+\textbf{FLNK: }Ok:Ch1 \\
+\textbf{DISS: }MAJOR \\
+\newpage
+\section{Ok:Ch1}
+\textbf{DESC: }hmm channel 1 measurement \\
+\textbf{DTYP: }stream \\
+\textbf{INP: }keysightOsc.proto measWav(CHAN1) Ok \\
+\textbf{FTVL: }DOUBLE \\
+\textbf{NELM: }arrlen \\
+\textbf{FLNK: }Ok:Ch1sVrms \\
+\textbf{EGU: }Volt \\
+\newpage
+\section{Ok:Ch2}
+\textbf{DESC: }hmm channel 2 measurement \\
+\textbf{DTYP: }stream \\
+\textbf{INP: }keysightOsc.proto measWav(CHAN2) Ok \\
+\textbf{FTVL: }DOUBLE \\
+\textbf{NELM: }arrlen \\
+\textbf{FLNK: }Ok:Ch2sVrms \\
+\textbf{EGU: }Volt \\
+\newpage
+\section{Ok:Ch2sVrms}
+\textbf{DESC: }hmm channel 2 Vrms measurment \\
+\textbf{DTYP: }stream \\
+\textbf{INP: }keysightOsc.proto measVrms(CHAN2) Ok \\
+\textbf{FLNK: }Ok:Ch4sCh3sPhasDiff \\
+\textbf{EGU: }Volt \\
+\newpage
+\section{Ok:Ch4sCh3sPhasDiff}
+\textbf{DESC: }hmm ch 4 - ch 3 phase difference \\
+\textbf{DTYP: }stream \\
+\textbf{INP: }keysightOsc.proto measPhas(CHAN4,CHAN3) Ok \\
+\textbf{FLNK: }Ok:Ch3 \\
+\textbf{EGU: }Degree \\
+\newpage
+\section{Ok:Ch3}
+\textbf{DESC: }hmm channel 3 measurement \\
+\textbf{DTYP: }stream \\
+\textbf{INP: }keysightOsc.proto measWav(CHAN3) Ok \\
+\textbf{FTVL: }DOUBLE \\
+\textbf{NELM: }arrlen \\
+\textbf{FLNK: }Ok:Ch3sVpp \\
+\textbf{EGU: }Volt \\
+\newpage
+\section{Ok:Ch3sVpp}
+\textbf{DESC: }hmm channel 3 Vpp measurment \\
+\textbf{DTYP: }stream \\
+\textbf{INP: }keysightOsc.proto measVpp(CHAN3) Ok \\
+\textbf{FLNK: }Ok:Ch4 \\
+\textbf{EGU: }Volt \\
+\newpage
+\section{Ok:Ch4}
+\textbf{DESC: }hmm channel 4 measurement \\
+\textbf{DTYP: }stream \\
+\textbf{INP: }keysightOsc.proto measWav(CHAN4) Ok \\
+\textbf{FTVL: }DOUBLE \\
+\textbf{NELM: }arrlen \\
+\textbf{FLNK: }Ok:Ch4sVpp \\
+\textbf{EGU: }Volt \\
+\newpage
+\section{Ok:Ch4sVpp}
+\textbf{DESC: }hmm channel 4 Vpp measurment \\
+\textbf{DTYP: }stream \\
+\textbf{INP: }keysightOsc.proto measVpp(CHAN4) Ok \\
+\textbf{EGU: }Volt \\
 \newpage
 \end{document}
