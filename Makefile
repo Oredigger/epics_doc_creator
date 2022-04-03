@@ -11,11 +11,11 @@ OBJ := $(SRC:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
 .PHONY: all clean
 
 all: $(OBJ)
-	$(CC) -o main $(OBJ)
+	$(CC) -std=c++11 -o main $(OBJ)
 
 # Compiling source files into object files.
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR)
-	$(CC) $(CFLAGS) -c $< -o $@ -g -fPIC
+	$(CC) -std=c++11 $(CFLAGS) -c $< -o $@ -g -fPIC
 
 $(OBJDIR):
 	mkdir -p $@

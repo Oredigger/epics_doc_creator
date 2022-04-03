@@ -1,0 +1,124 @@
+\documentclass[12pt]{article}
+\begin{document}
+\section{sample4.db/Test\textunderscore ad:reload}
+\textbf{SNAM: }streamReload \\
+\newpage
+\section{sample4.db/Test\textunderscore ad:ao}
+\textbf{DESC: }An analog value \\
+\textbf{DTYP: }stream \\
+\textbf{OUT: }example.proto set-ao terminal \\
+\textbf{PREC: }3 \\
+\textbf{LINR: }LINEAR \\
+\textbf{ESLO: }0.000305180437934 \\
+\textbf{EOFF: }10 \\
+\textbf{DRVL: }10 \\
+\textbf{DRVH: }10 \\
+\textbf{EGU: }V \\
+\newpage
+\section{sample4.db/Test\textunderscore ad:ai}
+\textbf{DESC: }An analog value \\
+\textbf{DTYP: }stream \\
+\textbf{INP: }example.proto ai terminal \\
+\textbf{PREC: }3 \\
+\textbf{LINR: }LINEAR \\
+\textbf{ESLO: }0.000305180437934 \\
+\textbf{EOFF: }10 \\
+\textbf{EGU: }V \\
+\newpage
+\section{sample4.db/Test\textunderscore ad:lo}
+\textbf{DESC: }An integer value \\
+\textbf{DTYP: }stream \\
+\textbf{OUT: }example.proto lo terminal \\
+\newpage
+\section{sample4.db/Test\textunderscore ad:li}
+\textbf{DESC: }An integer value \\
+\textbf{DTYP: }stream \\
+\textbf{INP: }example.proto li terminal \\
+\newpage
+\section{sample4.db/Test\textunderscore ad:bo}
+\textbf{DESC: }A bit value \\
+\textbf{DTYP: }stream \\
+\textbf{OUT: }example.proto bo terminal \\
+\textbf{MASK: }42 \\
+\textbf{ZNAM: }OFF \\
+\textbf{ONAM: }ON \\
+\newpage
+\section{sample4.db/Test\textunderscore ad:bi}
+\textbf{DESC: }A bit value \\
+\textbf{DTYP: }stream \\
+\textbf{INP: }example.proto bi terminal \\
+\textbf{ZNAM: }OFF \\
+\textbf{ONAM: }ON \\
+\newpage
+\section{sample4.db/Test\textunderscore ad:mbbo}
+\textbf{DESC: }Print Enums \\
+\textbf{DTYP: }stream \\
+\textbf{OUT: }example.proto enums terminal \\
+\textbf{ZRST: }A \\
+\textbf{ZRVL: }2 \\
+\textbf{ONST: }B \\
+\textbf{ONVL: }3 \\
+\textbf{TWST: }C \\
+\textbf{TWVL: }1 \\
+\textbf{THST: }D \\
+\textbf{THVL: }0 \\
+\newpage
+\section{sample4.db/Test\textunderscore ad:command}
+\textbf{DTYP: }stream \\
+\textbf{OUT: }example.proto COMMAND terminal \\
+\newpage
+\section{sample4.db/Test\textunderscore ad:info}
+\textbf{DTYP: }stream \\
+\textbf{INP: }example.proto info terminal \\
+\newpage
+\section{sample4.db/Test\textunderscore ad:checksum}
+\textbf{DTYP: }stream \\
+\textbf{OUT: }example.proto checksum terminal \\
+\newpage
+\section{sample4.db/Test\textunderscore ad:spy}
+\textbf{DTYP: }stream \\
+\textbf{INP: }example.proto spy terminal \\
+\textbf{SCAN: }I\slash O Intr \\
+\textbf{FLNK: }Test\textunderscore ad:log5 \\
+\newpage
+\section{sample4.db/Test\textunderscore ad:log5}
+\textbf{INP: }Test\textunderscore ad:log4 \\
+\textbf{FLNK: }Test\textunderscore ad:log4 \\
+\newpage
+\section{sample4.db/Test\textunderscore ad:log4}
+\textbf{INP: }Test\textunderscore ad:log3 \\
+\textbf{FLNK: }Test\textunderscore ad:log3 \\
+\newpage
+\section{sample4.db/Test\textunderscore ad:laog3}
+\textbf{INP: }Test\textunderscore ad:log2 \\
+\textbf{FLNK: }Test\textunderscore ad:log2 \\
+\newpage
+\section{sample4.db/Test\textunderscore ad:log2}
+\textbf{INP: }Test\textunderscore ad:log1 \\
+\textbf{FLNK: }Test\textunderscore ad:log1 \\
+\newpage
+\section{sample4.db/Test\textunderscore ad:log1}
+\textbf{INP: }Test\textunderscore ad:spy \\
+\newpage
+\section{sample4.db/Test\textunderscore ad:calcout}
+\textbf{DTYP: }stream \\
+\textbf{OUT: }example.proto calcout terminal \\
+\textbf{A: }3.1415 \\
+\textbf{B: }15 \\
+\textbf{C: }8 \\
+\textbf{CALC: }0 \\
+\textbf{DESC: }filename \\
+\newpage
+\section{sample4.db/Test\textunderscore ad:hugestring}
+\textbf{DTYP: }stream \\
+\textbf{INP: }example.proto chardfswavedfsin terminal \\
+\textbf{FTVL: }CHAR \\
+\textbf{NELM: }1000 \\
+\newpage
+\section{sample4.db/Test\textunderscore ad:strings}
+\textbf{DTYP: }stream \\
+\textbf{INP: }example.proto stringdfswavedfsout terminal \\
+\textbf{FTVL: }STRING \\
+\textbf{NELM: }10 \\
+\newpage
+\end{document}

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <sys/stat.h>
 #include <tuple>
 
 #include "epics_latex_gen.hpp"
@@ -28,7 +29,15 @@ static void check_str_in_latex(std::string &r_str)
 void gen_latex_doc(std::string tex_fn, std::string db_fn, q_token q_state)
 {
     std::ofstream fout;
-    fout.open(tex_fn + ".tex", std::ofstream::out);
+    struct stat buf;
+    
+    if (stat("./tex", &buf))
+    {
+        std::cout << "Creating tex directory" << std::endl;
+        mkdir("./tex", 777);
+    }
+
+    fout.open("./tex/" + tex_fn + ".tex", std::ofstream::out);
 
     if (!fout.good())
         return;
