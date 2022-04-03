@@ -27,8 +27,6 @@ typedef std::queue<std::tuple<lex_states, std::string, size_t>> q_token;
 
 class EpicsLexAnalysis
 {
-    private:
-        q_token q_state;
     public:
         EpicsLexAnalysis(void);
         EpicsLexAnalysis(std::string fn);
@@ -36,6 +34,9 @@ class EpicsLexAnalysis
         q_token get_q_state(void);
         void print_q_state(void);
         void load_file(std::string fn);
+        
+    private:
+        q_token q_state;
 };
 
 #endif

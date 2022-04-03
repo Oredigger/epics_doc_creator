@@ -6,20 +6,28 @@
 
 const std::string param_keywords[] = 
 {
+    "author",
     "brief", 
     "bug", 
     "file",
     "endlink",
     "link",
-    "page"
+    "param",
     "remark",
     "short",
 }; 
 
-class EpicsLatexRecordSection
+class EpicsLatexDbHeader
 {
     public:
+        EpicsLatexDbSection(void);
+        EpicsLatexDbSection(std::string r_str);
+
     private:
+        std::string author;
+        std::string brief;
+        std::string bug;
+        std::string file;
 };
 
 class EpicsLatexLinkChains
