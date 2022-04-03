@@ -6,7 +6,7 @@
 #include <utility>
 
 // Project libraries
-#include "epics_db_parse.hpp"
+#include "epics_lex_analysis.hpp"
 #include "epics_latex_gen.hpp"
 
 int main(int argc, char *argv[])
@@ -19,9 +19,9 @@ int main(int argc, char *argv[])
         std::cout << argv[i + 1] << std::endl;
     }
 
-    EPICS_DB_parse x(argv[1]);
+    EpicsLexAnalysis x(argv[1]);
     x.print_q_state();
-    gen_latex_doc("hmm", x.get_q_state());
+    gen_latex_doc("hmm", argv[1], x.get_q_state());
     
     return EXIT_SUCCESS;
 }

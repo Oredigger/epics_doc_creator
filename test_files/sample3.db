@@ -3,7 +3,7 @@
 # Test this comment
 #
    d
-record (ai, "PS1:I-get")
+record (((ai, "PS1:I-get")
 {
     field (DESC, "Read current of PS1")
     field (DTYP, "stream")

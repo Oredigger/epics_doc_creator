@@ -12,6 +12,18 @@ void replace_all_char(std::string &r_str, char c, char s)
     r_str.replace(r_str.begin(), r_str.end(), c, s);
 }
 
+void replace_all_substr(std::string &r_str, std::string target, std::string replace)
+{
+    // I was lazy, so I took the example code from Varun of thispointer.com
+    size_t first_occ = r_str.find(target);
+
+    while (first_occ != std::string::npos)
+    {
+        r_str.replace(first_occ, target.size(), replace);
+        first_occ = r_str.find(target, first_occ + replace.length());
+    }
+}
+
 std::queue<size_t> get_all_char_pos(std::string r_str, char c)
 {
     std::queue<size_t> q_idx;

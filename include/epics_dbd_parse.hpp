@@ -5,34 +5,34 @@
 #include <tuple>
 #include <vector>
 
-struct DBD_menu
+struct DbdMenu
 {
     std::string menu_name;
     std::vector<std::tuple<std::string, std::string>> choice;
 };
 
-struct DBD_fields
+struct DbdFields
 {
     std::string field_name;
     std::vector<std::tuple<std::string, std::string>> prop;
-    DBD_menu menu;
+    DbdMenu menu;
 };
 
-struct DBD_recordtype
+struct DbdRecordtype
 {
     std::string recordtype_name;
-    std::vector<DBD_fields> field;
+    std::vector<DbdFields> field;
 };
 
-class EPICS_DBD_parse
+class EpicsDbdParse
 {
     private:
-        DBD_fields fields;
-        DBD_menu menu;
-        DBD_recordtype rec;
+        DbdMenu menu;
+        DbdFields fields;
+        DbdRecordtype rec;
     public:
-        EPICS_DBD_parse(void);
-        EPICS_DBD_parse(std::string fn);
+        EpicsDbdParse(void);
+        EpicsDbdParse(std::string fn);
 };
 
 #endif

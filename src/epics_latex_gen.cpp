@@ -3,15 +3,32 @@
 #include <tuple>
 
 #include "epics_latex_gen.hpp"
+#include "parse_util.hpp"
 
 static const std::string DOC_HEADER = "\\documentclass[12pt]{article}\n";
 static const std::string FILE_BEGIN = "\\begin{document}\n";
 static const std::string FILE_END   = "\\end{document}\n";
 
-void gen_latex_doc(std::string fn, q_token q_state)
+static void check_str_in_latex(std::string &r_str)
+{
+    replace_all_substr(r_str,  "\\", "\\textbackslash ");
+    replace_all_substr(r_str,   "_", "\\textunderscore ");
+    replace_all_substr(r_str,   "¶", "\\P ");
+    replace_all_substr(r_str,   "^", "\\textasciicircum ");
+    replace_all_substr(r_str,   "$", "\\$ ");
+    replace_all_substr(r_str,   "§", "\\S ");
+    replace_all_substr(r_str,   "~", "\\textasciitilde ");
+    replace_all_substr(r_str,   "{", "\\{ "); 
+    replace_all_substr(r_str, "...", "\\dots ");
+    replace_all_substr(r_str,   "<", "\\textless ");
+    replace_all_substr(r_str,   ">", "\\greater ");
+    replace_all_substr(r_str,   "/", "\\slash ");
+}
+
+void gen_latex_doc(std::string tex_fn, std::string db_fn, q_token q_state)
 {
     std::ofstream fout;
-    fout.open(fn + ".tex", std::ofstream::out);
+    fout.open(tex_fn + ".tex", std::ofstream::out);
 
     if (!fout.good())
         return;
@@ -20,42 +37,49 @@ void gen_latex_doc(std::string fn, q_token q_state)
     fout << FILE_BEGIN;
 
     size_t header_state = 0;
+    std::string base_fn = db_fn.substr(db_fn.find_last_of("/") + 1);
+    std::cout << base_fn << std::endl;
 
     while (!q_state.empty())
     {
         auto elem = q_state.front();
-        dpl_states state = std::get<0>(elem);
+        lex_states state = std::get<0>(elem);
         std::string name = std::get<1>(elem);
         
         // Make sure to convert _ to /_
     
-        switch (state)
+        if (state == HEADER)
         {
-            case HEADER:
-                if (name == "record")
-                {
-                    fout << "\\section";
-                    header_state = 0;
-                }
-                if (name == "field")
-                    header_state = 1;
+            if (name == "record")
+            {
+                fout << "\\section";
+                header_state = 0;
+            }
+            if (name == "field")
+                header_state = 1;
+        }
+        else if (state == TYPE)
+        {
+            if (header_state)
+            {
+                check_str_in_latex(name);
+                fout << "\\textbf{" << name << ": }";
+            }
+        }
+        else if (state == VALUE)
+        {
+            check_str_in_latex(name);
 
-                break;
-            case TYPE:
-                if (header_state)
-                    fout << "\\textbf{" << name << ": }";
+            if (header_state)
+                fout << name << " \\\\";
+            else
+                fout << "{" << base_fn << "/" << name << "}";
 
-                break;
-            case VALUE:
-                if (header_state)
-                    fout << name << " \\\\";
-                else
-                    fout << "{" << name << "}";
-
-                fout << "\n";
-                break;
-            case RIGHT_CURLY:
-                fout << "\\newpage\n";
+            fout << "\n";
+        }
+        else if (state == RIGHT_CURLY)
+        {
+            fout << "\\newpage\n";
         }
 
         q_state.pop();
