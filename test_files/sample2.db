@@ -1,3 +1,21 @@
+###
+# 
+# /bug There are no reported bugs. I mean come on. There has to be a bug somewhere! I think
+#
+#
+# /file sample2.db
+# /brief This is a brief description of what the records in this database file will do. There are several
+# things it does.
+#
+# 
+# /desc
+# What is the point of this database file? It is simply to showcase how sophisticated this document generator 
+# really is. Also, I guess this is an example of a database file we might encounter that will include
+# some stuff about the instruments.
+#
+# Also, I really like to eat pizza. It is very good.
+###
+
 record(stringin, "SCOPE:ID") {
     field(INP , "@hp3458a.proto idn 5600")
     field(SDIS, "SCOPE:RUN")

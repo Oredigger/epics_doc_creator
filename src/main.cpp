@@ -11,17 +11,17 @@
 
 int main(int argc, char *argv[])
 {
-    if (argc <= 1)
-        return EXIT_FAILURE;
+    //if (argc <= 1)
+    //    return EXIT_FAILURE;
 
     for (int i = 0; i < argc - 1; i++)
     {
         std::cout << argv[i + 1] << std::endl;
     }
 
-    EpicsLexAnalysis x(argv[1]);
+    EpicsLexAnalysis x("test_files/sample2.db");
     x.print_q_state();
-    gen_latex_doc("hmm", argv[1], x.get_q_state());
+    gen_latex_doc("hmm", "test_files/sample2.db", x.get_q_state());
     
     return EXIT_SUCCESS;
 }

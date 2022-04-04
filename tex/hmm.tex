@@ -1,124 +1,83 @@
 \documentclass[12pt]{article}
 \begin{document}
-\section{sample4.db/Test\textunderscore ad:reload}
-\textbf{SNAM: }streamReload \\
-\newpage
-\section{sample4.db/Test\textunderscore ad:ao}
-\textbf{DESC: }An analog value \\
+\section{sample2.db}
+\textit{This is a brief description of what the records in this database file will do. There are several
+ things it does.}
+\subsection{Description}
+What is the point of this database file? It is simply to showcase how sophisticated this document generator 
+ really is. Also, I guess this is an example of a database file we might encounter that will include
+ some stuff about the instruments.
+
+ Also, I really like to eat pizza. It is very good.
+\subsection{Bug Notes}
+There are no reported bugs. I mean come on. There has to be a bug somewhere! I think
+\subsection{Records}
+\subsubsection{sample2.db/SCOPE:ID}
+\textbf{INP: }hp3458a.proto idn 5600 \\
+\textbf{SDIS: }SCOPE:RUN \\
+\textbf{DISV: }5.7 \\
 \textbf{DTYP: }stream \\
-\textbf{OUT: }example.proto set-ao terminal \\
-\textbf{PREC: }3 \\
-\textbf{LINR: }LINEAR \\
-\textbf{ESLO: }0.000305180437934 \\
-\textbf{EOFF: }10 \\
-\textbf{DRVL: }10 \\
-\textbf{DRVH: }10 \\
-\textbf{EGU: }V \\
+\textbf{SCAN: }10 second \\
+\textbf{FLNK: }SCOPE:ERR \\
+\textbf{TPRO: }1 \\
 \newpage
-\section{sample4.db/Test\textunderscore ad:ai}
-\textbf{DESC: }An analog value \\
+\subsubsection{sample2.db/SCOPE:ERR}
 \textbf{DTYP: }stream \\
-\textbf{INP: }example.proto ai terminal \\
-\textbf{PREC: }3 \\
-\textbf{LINR: }LINEAR \\
-\textbf{ESLO: }0.000305180437934 \\
-\textbf{EOFF: }10 \\
-\textbf{EGU: }V \\
+\textbf{INP: }hp3458a.proto err 5600 \\
+\textbf{FLNK: }SCOPE:ERRMSG \\
+\textbf{TPRO: }1 \\
 \newpage
-\section{sample4.db/Test\textunderscore ad:lo}
-\textbf{DESC: }An integer value \\
+\subsubsection{sample2.db/SCOPE:ERRMSG}
 \textbf{DTYP: }stream \\
-\textbf{OUT: }example.proto lo terminal \\
+\textbf{INP: }hp3458a.proto errstr 5600 \\
+\textbf{TPRO: }1 \\
 \newpage
-\section{sample4.db/Test\textunderscore ad:li}
-\textbf{DESC: }An integer value \\
+\subsubsection{sample2.db/SCOPE:RUN}
+\textbf{ZNAM: }Pause \\
+\textbf{ONAM: }Sample \\
+\textbf{FLNK: }SCOPE:RUNx \\
+\textbf{TPRO: }1 \\
+\newpage
+\subsubsection{sample2.db/SCOPE:RUNx}
+\textbf{LNK1: }SCOPE:DISx \\
+\textbf{LNK2: }SCOPE:ENAx \\
+\textbf{TPRO: }1 \\
+\newpage
+\subsubsection{sample2.db/SCOPE:ENAx}
+\textbf{SDIS: }SCOPE:RUN \\
+\textbf{DISV: }0 \\
 \textbf{DTYP: }stream \\
-\textbf{INP: }example.proto li terminal \\
+\textbf{OUT: }hp3458a.proto setup 5600 \\
+\textbf{TPRO: }1 \\
+\textbf{FLNK: }SCOPE:I.PROC CA \\
 \newpage
-\section{sample4.db/Test\textunderscore ad:bo}
-\textbf{DESC: }A bit value \\
+\subsubsection{sample2.db/SCOPE:DISx}
+\textbf{SDIS: }SCOPE:RUN \\
+\textbf{DISV: }1 \\
 \textbf{DTYP: }stream \\
-\textbf{OUT: }example.proto bo terminal \\
-\textbf{MASK: }42 \\
-\textbf{ZNAM: }OFF \\
-\textbf{ONAM: }ON \\
+\textbf{OUT: }hp3458a.proto detach 5600 \\
+\textbf{TPRO: }1 \\
 \newpage
-\section{sample4.db/Test\textunderscore ad:bi}
-\textbf{DESC: }A bit value \\
+\subsubsection{sample2.db/SCOPE:I}
+\textbf{SDIS: }SCOPE:RUN NPP \\
+\textbf{DISV: }0 \\
 \textbf{DTYP: }stream \\
-\textbf{INP: }example.proto bi terminal \\
-\textbf{ZNAM: }OFF \\
-\textbf{ONAM: }ON \\
+\textbf{INP: }hp3458a.proto sample 5600 \\
+\textbf{EGU: }A \\
+\textbf{PREC: }9 \\
+\textbf{FLNK: }SCOPE:CNT \\
+\textbf{TPRO: }1 \\
 \newpage
-\section{sample4.db/Test\textunderscore ad:mbbo}
-\textbf{DESC: }Print Enums \\
-\textbf{DTYP: }stream \\
-\textbf{OUT: }example.proto enums terminal \\
-\textbf{ZRST: }A \\
-\textbf{ZRVL: }2 \\
-\textbf{ONST: }B \\
-\textbf{ONVL: }3 \\
-\textbf{TWST: }C \\
-\textbf{TWVL: }1 \\
-\textbf{THST: }D \\
-\textbf{THVL: }0 \\
+\subsubsection{sample2.db/SCOPE:CNT}
+\textbf{CALC: }VAL+1 \\
+\textbf{FLNK: }SCOPE:I.PROC CA \\
 \newpage
-\section{sample4.db/Test\textunderscore ad:command}
-\textbf{DTYP: }stream \\
-\textbf{OUT: }example.proto COMMAND terminal \\
-\newpage
-\section{sample4.db/Test\textunderscore ad:info}
-\textbf{DTYP: }stream \\
-\textbf{INP: }example.proto info terminal \\
-\newpage
-\section{sample4.db/Test\textunderscore ad:checksum}
-\textbf{DTYP: }stream \\
-\textbf{OUT: }example.proto checksum terminal \\
-\newpage
-\section{sample4.db/Test\textunderscore ad:spy}
-\textbf{DTYP: }stream \\
-\textbf{INP: }example.proto spy terminal \\
-\textbf{SCAN: }I\slash O Intr \\
-\textbf{FLNK: }Test\textunderscore ad:log5 \\
-\newpage
-\section{sample4.db/Test\textunderscore ad:log5}
-\textbf{INP: }Test\textunderscore ad:log4 \\
-\textbf{FLNK: }Test\textunderscore ad:log4 \\
-\newpage
-\section{sample4.db/Test\textunderscore ad:log4}
-\textbf{INP: }Test\textunderscore ad:log3 \\
-\textbf{FLNK: }Test\textunderscore ad:log3 \\
-\newpage
-\section{sample4.db/Test\textunderscore ad:laog3}
-\textbf{INP: }Test\textunderscore ad:log2 \\
-\textbf{FLNK: }Test\textunderscore ad:log2 \\
-\newpage
-\section{sample4.db/Test\textunderscore ad:log2}
-\textbf{INP: }Test\textunderscore ad:log1 \\
-\textbf{FLNK: }Test\textunderscore ad:log1 \\
-\newpage
-\section{sample4.db/Test\textunderscore ad:log1}
-\textbf{INP: }Test\textunderscore ad:spy \\
-\newpage
-\section{sample4.db/Test\textunderscore ad:calcout}
-\textbf{DTYP: }stream \\
-\textbf{OUT: }example.proto calcout terminal \\
-\textbf{A: }3.1415 \\
-\textbf{B: }15 \\
-\textbf{C: }8 \\
-\textbf{CALC: }0 \\
-\textbf{DESC: }filename \\
-\newpage
-\section{sample4.db/Test\textunderscore ad:hugestring}
-\textbf{DTYP: }stream \\
-\textbf{INP: }example.proto chardfswavedfsin terminal \\
-\textbf{FTVL: }CHAR \\
-\textbf{NELM: }1000 \\
-\newpage
-\section{sample4.db/Test\textunderscore ad:strings}
-\textbf{DTYP: }stream \\
-\textbf{INP: }example.proto stringdfswavedfsout terminal \\
-\textbf{FTVL: }STRING \\
-\textbf{NELM: }10 \\
+\subsubsection{sample2.db/SCOPE:RATE}
+\textbf{DESC: }Update rate \\
+\textbf{INPA: }SCOPE:CNT NPP \\
+\textbf{CALC: }C:=A-B;B:=A;C\slash 10 \\
+\textbf{SCAN: }10 second \\
+\textbf{EGU: }Hz \\
+\textbf{PREC: }1 \\
 \newpage
 \end{document}
