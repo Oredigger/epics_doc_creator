@@ -36,7 +36,7 @@ const int PARAM_KEY   = 7;
 const int REMARK_KEY  = 8;
 const int SHORT_KEY   = 9;
 
-static void check_str_in_latex(std::string &r_str)
+static void check_str_in_latex(std::string &r_str, bool in_cmd)
 {
     replace_all_substr(r_str,  "\\", "\\textbackslash ");
     replace_all_substr(r_str,   "_", "\\textunderscore ");
@@ -50,19 +50,10 @@ static void check_str_in_latex(std::string &r_str)
     replace_all_substr(r_str,   "<", "\\textless ");
     replace_all_substr(r_str,   ">", "\\greater ");
     replace_all_substr(r_str,   "/", "\\slash ");
+    replace_all_substr(r_str,  "\n", in_cmd ? "\\" : "\n");
 }
 
-EpicsLatexDbHeader::EpicsLatexDbHeader(void)
-{
-
-}
-
-EpicsLatexDbHeader::EpicsLatexDbHeader(std::string dbh_str)
-{
-    load_db_header_str(dbh_str);
-}
-
-void EpicsLatexDbHeader::load_db_header_str(std::string dbh_str)
+EpicsLatexHeader::EpicsLatexHeader(std::string dbh_str)
 {
     const size_t H_KEYS_LEN = 4;
     const int HEADER_KEYS[H_KEYS_LEN] = 
@@ -84,53 +75,47 @@ void EpicsLatexDbHeader::load_db_header_str(std::string dbh_str)
 
         if (p_idx != std::string::npos)
         {
-            size_t end_search_idx = p_idx + param.length() + 1;
-            size_t nl_idx = dbh_str.find((i == H_KEYS_LEN - 1) ? "\n##" : "/", end_search_idx);
+            size_t start_idx = p_idx + param.length() + 1;
+            size_t end_idx = dbh_str.find((i == H_KEYS_LEN - 1) ? "\n##" : "/", start_idx);
 
-            if (nl_idx != std::string::npos)
+            if (end_idx != std::string::npos)
             {
-                size_t s_str_len = nl_idx - end_search_idx;
-                temp = dbh_str.substr(end_search_idx, s_str_len);
+                size_t s_str_len = end_idx - start_idx;
+                temp = dbh_str.substr(start_idx, s_str_len);
             }
         }
 
         results[i] = temp;
     }
-
-    file = results[0];
-    trim_whitespace(file);
-
+    
+    file  = results[0];
     brief = results[1];
-    trim_whitespace(brief);
-
-    bug = results[2];
-    trim_whitespace(bug);
-
-    desc = results[3];
-    trim_whitespace(desc);
+    bug   = results[2];
+    desc  = results[3];
 }
 
-std::string EpicsLatexDbHeader::get_conv_str(void)
+std::string EpicsLatexHeader::get_conv_str(void)
 {
-    check_str_in_latex(file);
+    check_str_in_latex(file, true);
     conv += "\\section{" + file + "}\n";
 
-    check_str_in_latex(brief);
+    check_str_in_latex(brief, true);
     conv += "\\textit{" + brief + "}\n";
 
-    check_str_in_latex(desc);
+    check_str_in_latex(desc, false);
     conv += "\\subsection{Description}\n" + desc + "\n";
 
-    check_str_in_latex(bug);
+    check_str_in_latex(bug, false);
     conv += "\\subsection{Bug Notes}\n" + bug + "\n";
 
     return conv;
 }
 
-std::string gen_dbh_str(std::string db_fn, q_token q_state)
+std::string gen_header_str(std::string db_fn, q_token &q_state)
 {
     std::string comment, name;
     lex_states state;
+    bool is_header = false;
 
     while (!q_state.empty())
     {
@@ -139,7 +124,20 @@ std::string gen_dbh_str(std::string db_fn, q_token q_state)
         name  = std::get<1>(elem);
         
         if (state == COMMENT)
-            comment += name;
+        {
+            if (is_header)
+                comment += name;
+
+            if (name == "##")
+            {
+                if (is_header)
+                {
+                    q_state.pop();
+                    break;
+                }
+                is_header = true;
+            }
+        }
         else if (state == NEWLINE)
             comment += '\n';
         else if (state != POUND)
@@ -167,9 +165,9 @@ void gen_latex_doc(std::string tex_fn, std::string db_fn, q_token q_state)
     std::string base_fn = db_fn.substr(db_fn.find_last_of("/") + 1);
     fout << DOC_HEADER << FILE_BEGIN;
    
-    std::string dbh_str = gen_dbh_str(db_fn, q_state);
-    EpicsLatexDbHeader head(dbh_str); 
-    fout << head.get_conv_str();
+    std::string dbh_str = gen_header_str(db_fn, q_state);
+    EpicsLatexHeader db_file_head(dbh_str); 
+    fout << db_file_head.get_conv_str();
 
     bool header_state = 0;
     std::string name;
@@ -178,7 +176,9 @@ void gen_latex_doc(std::string tex_fn, std::string db_fn, q_token q_state)
     if (!q_state.empty())
         fout << "\\subsection{Records}\n";
 
-    while (!q_state.empty())
+    print_q_state(q_state);
+    
+    /*while (!q_state.empty())
     {
         auto elem  = q_state.front();
         state = std::get<0>(elem);
@@ -198,13 +198,13 @@ void gen_latex_doc(std::string tex_fn, std::string db_fn, q_token q_state)
         {
             if (header_state)
             {
-                check_str_in_latex(name);
+                check_str_in_latex(name, true);
                 fout << "\\textbf{" << name << ": }";
             }
         }
         else if (state == VALUE)
         {
-            check_str_in_latex(name);
+            check_str_in_latex(name, false);
 
             if (header_state)
                 fout << name << " \\\\";
@@ -219,7 +219,7 @@ void gen_latex_doc(std::string tex_fn, std::string db_fn, q_token q_state)
         }
 
         q_state.pop();
-    }
+    }*/
     
     fout << FILE_END;  
     fout.close();

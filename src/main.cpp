@@ -20,7 +20,6 @@ int main(int argc, char *argv[])
     }
 
     EpicsLexAnalysis x("test_files/sample2.db");
-    x.print_q_state();
     gen_latex_doc("hmm", "test_files/sample2.db", x.get_q_state());
     
     return EXIT_SUCCESS;

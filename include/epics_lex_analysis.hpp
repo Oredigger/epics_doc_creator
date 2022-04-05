@@ -28,15 +28,13 @@ typedef std::queue<std::tuple<lex_states, std::string, size_t>> q_token;
 class EpicsLexAnalysis
 {
     public:
-        EpicsLexAnalysis(void);
         EpicsLexAnalysis(std::string fn);
-
         q_token get_q_state(void);
-        void print_q_state(void);
-        void load_file(std::string fn);
         
     private:
         q_token q_state;
 };
+
+void print_q_state(q_token q_state);
 
 #endif

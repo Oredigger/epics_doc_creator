@@ -1,37 +1,63 @@
+# What the heck. This shouldn't be part of the code. I don't know why it is not reading it
+
 ###
 # 
-# /bug There are no reported bugs. I mean come on. There has to be a bug somewhere! I think
+# /bug There are no reported bugs. I mean come on. There has to be a bug somewhere! I think I like to watch the stars.
 #
 #
 # /file sample2.db
 # /brief This is a brief description of what the records in this database file will do. There are several
 # things it does.
 #
+# Sigh... Remember the human, I suppose.
 # 
 # /desc
-# What is the point of this database file? It is simply to showcase how sophisticated this document generator 
-# really is. Also, I guess this is an example of a database file we might encounter that will include
-# some stuff about the instruments.
-#
-# Also, I really like to eat pizza. It is very good.
+# This constant is defined with a value of -1, which because size_t is an unsigned integral type, it is the largest possible representable value for this type. The class template acts as a wrapper to the underlying container - only a specific set of functions is provided. 
+# The queue pushes the elements on the back of the underlying container and pops them from the front.
 ###
 
-record(stringin, "SCOPE:ID") {
-    field(INP , "@hp3458a.proto idn 5600")
-    field(SDIS, "SCOPE:RUN")
-    field(DISV, "5.7") # disable while Paused
-    field(DTYP, "stream")
-    field(SCAN, "10 second")
-    field(FLNK, "SCOPE:ERR")
-    field(TPRO, "1")
-}
+###  
+# /bug There are no reported bugs. You would think there would be a bug somewhere here
+#
+# /brief This is a brief description of how SCOPE_ID works.
+#
+# /desc This gets the identification string of the scope.
+###
+
+#record(stringin, "SCOPE:ID") {
+#    field(INP , "@hp3458a.proto idn 5600")
+#    field(SDIS, "SCOPE:RUN")
+#    field(DISV, "5.7") # disable while Paused
+#    field(DTYP, "stream")
+
+#    field(SCAN, "10 second")
+#    field(FLNK, "SCOPE:ERR")
+#    field(TPRO, "1")
+#}
+
+###  
+# /bug There are no reported bugs. I mean come on. There has to be a bug somewhere! I think I like to watch the stars.
+#
+# /brief This is a brief description of how SCOPE_ERR works.
+#
+# /desc This detects the scope error. 
+###
 
 record(longin, "SCOPE:ERR") {
-    field(DTYP, "stream")
-    field(INP , "@hp3458a.proto err 5600")
-    field(FLNK, "SCOPE:ERRMSG")
-    field(TPRO, "1")
+    # /param Because we have to use StreamDevice, we are required to put "stream" as the value of the
+    # DYTP field.
+    field(DTYP, "stream") field(INP , "@hp3458a.proto err 5700") field(FLNK, "SCOPE:ERRMSG")
+    # This doesn't seem to work.
+    field(TPRO, "1")    # /param We want to be able to debug this.
 }
+
+###  
+# /bug There are no reported bugs. I mean come on. There has to be a bug somewhere! I think I like to watch the stars.
+#
+# /brief This is a brief description of how SCOPE_ERR works.
+#
+# /desc This detects the scope error. 
+###
 
 record(stringin, "SCOPE:ERRMSG") {
     field(DTYP, "stream")

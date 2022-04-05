@@ -302,41 +302,7 @@ static q_token parse_dft(std::string r_str)
     return q_state;
 }
 
-EpicsLexAnalysis::EpicsLexAnalysis(void)
-{
-    q_state = q_token();
-}
-
 EpicsLexAnalysis::EpicsLexAnalysis(std::string fn)
-{
-    load_file(fn);
-}
-
-q_token EpicsLexAnalysis::get_q_state(void)
-{
-    return q_state;
-}
-
-void EpicsLexAnalysis::print_q_state(void)
-{
-    q_token q_copy = q_state;
-
-    while (!q_copy.empty())
-    {
-        auto elem = q_copy.front();
-        std::string token = (std::get<0>(elem) == NEWLINE) ? 
-                            "\\n" : std::get<1>(elem);
-
-        std::cout << state_2_str(std::get<0>(elem)) << "  " << token << "  " << std::get<2>(elem) << std::endl;
-        
-        if (std::get<0>(elem) == NEWLINE)
-            std::cout << "\n";
-
-        q_copy.pop();
-    }
-}
-
-void EpicsLexAnalysis::load_file(std::string fn)
 {
     if (!q_state.empty())
     {
@@ -362,4 +328,26 @@ void EpicsLexAnalysis::load_file(std::string fn)
 
     fin.close();
     q_state = parse_dft(r_str);
+}
+
+q_token EpicsLexAnalysis::get_q_state(void)
+{
+    return q_state;
+}
+
+void print_q_state(q_token q_state)
+{
+    while (!q_state.empty())
+    {
+        auto elem = q_state.front();
+        std::string token = (std::get<0>(elem) == NEWLINE) ? 
+                            "\\n" : std::get<1>(elem);
+
+        std::cout << state_2_str(std::get<0>(elem)) << "  " << token << "  " << std::get<2>(elem) << std::endl;
+        
+        if (std::get<0>(elem) == NEWLINE)
+            std::cout << "\n";
+
+        q_state.pop();
+    }
 }
