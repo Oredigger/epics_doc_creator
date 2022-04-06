@@ -19,8 +19,9 @@ int main(int argc, char *argv[])
         std::cout << argv[i + 1] << std::endl;
     }
 
-    EpicsLexAnalysis x("test_files/sample2.db");
-    gen_latex_doc("hmm", "test_files/sample2.db", x.get_q_state());
+    EpicsLexAnalysis x("test_files/sample3.db");
+    print_q_state(x.get_q_state());
+    EpicsLatexGen gen("hmm", "test_files/sample3.db", x.get_q_state());
     
     return EXIT_SUCCESS;
 }
