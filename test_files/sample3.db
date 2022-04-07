@@ -1,7 +1,4 @@
-# What the heck. This shouldn't be part of the code. I don't know why it is not reading it
-
 ###
-# 
 # /bug There are no reported bugs. I mean come on. There has to be a bug somewhere! I think I like to watch the stars.
 # What the heck is going on.
 #
@@ -9,33 +6,31 @@
 # /brief This is a brief description of what the records in this database file will do. There are several
 # things it does.
 # 
-# Hmm, what is the point.
+# /desc This constant is defined with a value of -1, which because size_t is an unsigned integral type, it is the largest possible representable 
+# value for this type. 
+###
+
+###  
+# /bug There are no reported bugs. I mean come on. There has to be a bug somewhere! I think I like to watch the stars.
 #
-# Sigh... Remember the human, I suppose.
-# 
-# /desc This constant is defined with a value of -1, which because size_t is an unsigned integral type, it is the largest possible representable value for this type. The class template acts as a wrapper to the underlying container - only a specific set of functions is provided. 
-# The queue pushes the elements on the back of the underlying container and pops them from the front.
-# Hmm.... what is the point
+# /brief This is a brief description of how current get works.
 #
-# What the heck. This is a new paragraph.
+# /desc This detects the scope error.
 ###
 
 record (((ai, "PS1:I-get")
 {
-    field (DESC, "Read current of PS1") field (DTYP, "stream") field (INP,  "@ExamplePS.proto getCurrent PS1")
+    field (DESC, "Read current of PS1") field (DTYP, "stream") 
+    field (INP,  "@ExamplePS.proto getCurrent PS1")
     field (EGU,  "A")
-    field (PREC, "2")
-    field (LOPR, "0")
-    field (HOPR, "60")
-    field (PINI, "YES") field (SCAN, "10 second")
 }
 
 ###  
-# /bug There are no reported bugs. I mean come on. There has to be a bug somewhere! I think I like to watch the stars. Shouldn't see this.
+# /bug There are no reported bugs. I mean come on. There has to be a bug somewhere! I think I like to watch the stars.
 #
-# /brief This is a brief description of how SCOPE_CR works. Shouldn't see this.
+# /brief This is a brief description of how current set works.
 #
-# /desc This detects the scope error. Shouldn't see this.
+# /desc This detects the scope error.
 ###
 
 record (ao, "PS1:I-set")
@@ -44,9 +39,5 @@ record (ao, "PS1:I-set")
     field (DTYP, "stream")
     field (OUT,  "@ExamplePS.proto setCurrent PS1")
     field (EGU,  "A")
- field (PREC, "2")
-    field (DRVL, "0")
-    field (DRVH, "60")
-    field (LOPR, "0")
-                  field (HOPR, "60")
+    field (PREC, "2")
 }

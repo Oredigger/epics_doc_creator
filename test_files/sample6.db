@@ -1,0 +1,177 @@
+record(ai, "attenuation_db")
+{
+        field(SCAN, "Passive")
+}
+
+###  
+# /bug There are no reported bugs. I mean come on. There has to be a bug somewhere! I think I like to watch the stars. Shouldn't see this.
+#
+# /brief This is a brief description of how SCOPE_CR works. Shouldn't see this.
+#
+# /desc This detects the scope error. Shouldn't see this.
+###
+
+record(ai, "attenuation_x")
+{
+    ###
+    # /param This is a passive record.
+    ###
+        field(SCAN, "Passive")
+}
+
+record(ai, "probe_factor")
+{
+        field(SCAN, "Passive")
+}
+
+record(ai, "scope_factor")
+{
+	field(SCAN, "Passive")
+}
+
+###  
+# /bug There are no reported bugs. I mean come on. There has to be a bug somewhere! I think I like to watch the stars. Shouldn't see this.
+#
+# /brief This is a brief description of how SCOPE_CR works. Shouldn't see this.
+#
+# /desc This detects the scope error. Shouldn't see this.
+###
+
+record(aai, "raw_ct_sic")
+{
+    ###
+    # /param Example of an internal record comment.
+    ###
+        field(SCAN, "Passive")
+        field(NELM, 20)
+        field(FTVL, "DOUBLE")
+        field(FLNK, "calibrated_ct_sic")
+}
+
+record(aai, "raw_cvr_lru")
+{
+        field(SCAN, "Passive")
+        field(NELM, 20)
+        field(FTVL, "DOUBLE")
+        field(FLNK, "calibrated_cvr_lru")
+}
+
+record(aai, "raw_cvr_compcan")
+{
+        field(SCAN, "Passive")
+        field(NELM, 20)
+        field(FTVL, "DOUBLE")
+        field(FLNK, "calibrated_cvr_compcan")
+}
+
+record(aai, "raw_rvm_lru")
+{
+        field(SCAN, "Passive")
+        field(NELM, 20)
+        field(FTVL, "DOUBLE")
+        field(FLNK, "calibrated_rvm_lru")
+}
+
+record(aai, "raw_rvm_sic")
+{
+        field(SCAN, "Passive")
+        field(NELM, 20)
+        field(FTVL, "DOUBLE")
+        field(FLNK, "calibrated_rvm_sic")
+}
+
+record(aai, "raw_stage_volt")
+{
+        field(SCAN, "Passive")
+        field(NELM, 20)
+        field(FTVL, "DOUBLE")
+        field(FLNK, "calibrated_stage_volt")
+}
+
+record(aai, "raw_timing")
+{
+	field(SCAN, "Passive")
+        field(NELM, 20)
+        field(FTVL, "DOUBLE")
+        field(FLNK, "calibrated_timing")
+}
+
+###  
+# /bug There are no reported bugs. I mean come on. There has to be a bug somewhere! I think I like to watch the stars. Shouldn't see this.
+#
+# /brief This is a brief description of how SCOPE_CR works. Shouldn't see this.
+#
+# /desc This detects the scope error. Shouldn't see this.
+###
+
+#record(acalcout, "calibrated_ct_sic")
+#{
+#        field(SCAN, "Passive")
+#        field(NELM, 20)
+#        field(INAA, "raw_ct_sic")
+#        field(INPA, "attenuation_db_ct_sic")
+#        field(INPB,"attenuation_x_ct_sic")
+#        field(INPC,"probe_factor_ct_sic")
+#        field(CALC, "(AA*10**(A/20))*(B+C)")
+#}
+
+record(acalcout, "calibrated_cvr_lru")
+{
+	field(SCAN, "Passive")
+	field(NELM, 20)
+	field(INAA, "raw_cvr_lru")
+	field(INPA,"attenuation_db")
+        field(INPB,"probe_factor")
+        field(CALC, "(AA*10**(A/20))/B")
+
+}	
+
+record(acalcout, "calibrated_cvr_compcan")
+{
+	field(SCAN, "Passive")
+	field(NELM, 20)
+	field(INAA, "raw_cvr_compcan")
+	field(INPA,"attenuation_db")
+        field(INPB,"probe_factor")
+        field(CALC, "(AA*10**(A/20))*B")
+}
+
+record(acalcout, "calibrated_rvm_lru")
+{
+	field(SCAN, "Passive")
+	field(NELM, 20)
+	field(INAA, "raw_rvm_lru")
+	field(INPA,"attenuation_db")
+        field(INPB,"probe_factor")
+        field(CALC, "(AA*10**(A/20))*B")
+}
+
+record(acalcout, "calibrated_rvm_sic")
+{
+	field(SCAN, "Passive")
+	field(NELM, 20)
+	field(INAA, "raw_rvm_sic")
+	field(INPA,"attenuation_db")
+        field(INPB,"probe_factor")
+        field(CALC, "(AA*10**(A/20))*B")
+}
+
+record(acalcout, "calibrated_stage_volt")
+{
+	field(SCAN, "Passive")
+	field(NELM, 20)
+	field(INAA, "raw_stage_volt")
+	field(INPA,"attenuation_db")
+        field(INPB,"probe_factor")
+	field(INPC, "scope_factor")
+        field(CALC, "(AA*10**(A/20))*B*C")
+}
+
+record(acalcout, "calibrated_timing")
+{
+	field(SCAN, "Passive")
+	field(NELM, 20)
+	field(INAA, "raw_timing")
+	field(INPA,"attenuation_db")
+        field(CALC, "AA*10**(A/20)")
+}

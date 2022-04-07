@@ -20,13 +20,13 @@
 #########################################################################/
 
 # "process this  to reload all stream protocols"
-record (sub, "Test_ad:reload")
+record (sub, "Testaad:reload")
 {
     field (SNAM, "streamReload")
 }
 
 # some scaling -10...10V <-> 0x0000...0xffff and back
-record (ao, "Test_ad:ao")
+record (ao, "Testaad:ao")
 {
     field (DESC, "An analog value")
     field (DTYP, "stream")
@@ -40,7 +40,7 @@ record (ao, "Test_ad:ao")
     field (EGU,  "V")
 }
 
-record (ai, "Test_ad:ai")
+record (ai, "Testaad:ai")
 {
     field (DESC, "An analog value")
     field (DTYP, "stream")
@@ -53,21 +53,21 @@ record (ai, "Test_ad:ai")
 }
 
 # simple integer and binary i/o
-record (longout, "Test_ad:lo")
+record (longout, "Testaad:lo")
 {
     field (DESC, "An integer value")
     field (DTYP, "stream")
     field (OUT,  "@example.proto lo terminal")
 }
 
-record (longin, "Test_ad:li")
+record (longin, "Testaad:li")
 {
     field (DESC, "An integer value")
     field (DTYP, "stream")
     field (INP,  "@example.proto li terminal")
 }
 
-record (bo, "Test_ad:bo")
+record (bo, "Testaad:bo")
 {
     field (DESC, "A bit value")
     field (DTYP, "stream")
@@ -77,7 +77,7 @@ record (bo, "Test_ad:bo")
     field (ONAM, "ON")
 }
 
-record (bi, "Test_ad:bi")
+record (bi, "Testaad:bi")
 {
     field (DESC, "A bit value")
     field (DTYP, "stream")
@@ -87,7 +87,7 @@ record (bi, "Test_ad:bi")
 }
 
 # playing with enums
-record (mbbo, "Test_ad:mbbo")
+record (mbbo, "Testaad:mbbo")
 {
     field (DESC, "Print Enums")
     field (DTYP, "stream")
@@ -102,60 +102,60 @@ record (mbbo, "Test_ad:mbbo")
     field (THVL, "0")
 }
 
-record (stringout, "Test_ad:command")
+record (stringout, "Testaad:command")
 {
     field (DTYP, "stream")
     field (OUT,  "@example.proto COMMAND terminal")
 }
 
-record (stringin, "Test_ad:info")
+record (stringin, "Testaad:info")
 {
     field (DTYP, "stream")
     field (INP,  "@example.proto info terminal")
 }
 
 # prints all available checksums
-record (stringout, "Test_ad:checksum")
+record (stringout, "Testaad:checksum")
 {
     field (DTYP, "stream")
     field (OUT,  "@example.proto checksum terminal")
 }
 
 # this  gets any (terminated) input line
-record (stringin, "Test_ad:spy")
+record (stringin, "Testaad:spy")
 {
     field (DTYP, "stream")
     field (INP,  "@example.proto spy terminal")
     field (SCAN, "I/O Intr")
-    field (FLNK, "Test_ad:log5")
+    field (FLNK, "Testaad:log5")
 }
 
 # these  log the last few input lines
-record (stringin, "Test_ad:log5")
+record (stringin, "Testaad:log5")
 {
-    field (INP,  "Test_ad:log4")field (FLNK, "Test_ad:log4")
+    field (INP,  "Testaad:log4")field (FLNK, "Testaad:log4")
 }
 
-record (stringin, "Test_ad:log4")
-{field (INP,  "Test_ad:log3")field (FLNK, "Test_ad:log3")}))<record (stringin, "Test_ad:laog3")
+record (stringin, "Testaad:log4")
+{field (INP,  "Testaad:log3")field (FLNK, "Testaad:log3")}))<record (stringin, "Testaad:laog3")
 {
-    field (INP,  "Test_ad:log2")
-    field (FLNK, "Test_ad:log2")
+    field (INP,  "Testaad:log2")
+    field (FLNK, "Testaad:log2")
 }
 
-record (stringin, "Test_ad:log2")
+record (stringin, "Testaad:log2")
 {
-    field (INP,  "Test_ad:log1")
-    field (FLNK, "Test_ad:log1")
+    field (INP,  "Testaad:log1")
+    field (FLNK, "Testaad:log1")
 }
 
-record (stringin, "Test_ad:log1")
+record (stringin, "Testaad:log1")
 {
-    field (INP,  "Test_ad:spy")
+    field (INP,  "Testaad:spy")
 }
 
 # caput to A,B,C or PROC to process this
-record (calcout, "Test_ad:calcout")
+record (calcout, "Testaad:calcout")
 {
     field (DTYP, "stream")
     field (OUT,  "@example.proto calcout terminal")
@@ -167,7 +167,7 @@ record (calcout, "Test_ad:calcout")
 }
 
 # read a long string as a waveform of characteres
-record (waveform, "Test_ad:hugestring")
+record (waveform, "Testaad:hugestring")
 {
     field (DTYP, "stream")
     field (INP,  "@example.proto chardfswavedfsin terminal")
@@ -176,7 +176,7 @@ record (waveform, "Test_ad:hugestring")
 }
 
 # write an array of strings
-record (waveform, "Test_ad:strings")
+record (waveform, "Testaad:strings")
 {
     field (DTYP, "stream")
     field (INP,  "@example.proto stringdfswavedfsout terminal")

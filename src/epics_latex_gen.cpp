@@ -10,7 +10,7 @@
 static std::string check_str_in_latex(std::string r_str, bool in_cmd)
 {
     replace_all_substr(r_str,  "\\", "\\textbackslash ");
-    replace_all_substr(r_str,   "_", "\\textunderscore ");
+    replace_all_substr(r_str,   "_", "\\_ ");
     replace_all_substr(r_str,   "¶", "\\P ");
     replace_all_substr(r_str,   "^", "\\textasciicircum ");
     replace_all_substr(r_str,   "$", "\\$ ");
@@ -21,6 +21,11 @@ static std::string check_str_in_latex(std::string r_str, bool in_cmd)
     replace_all_substr(r_str,   "<", "\\textless ");
     replace_all_substr(r_str,   ">", "\\greater ");
     replace_all_substr(r_str,   "/", "\\slash ");
+
+    /* When in_cmd is set to be TRUE, then that means r_str is bounded by parenthesis.
+     In that scenario, we have to make sure that the modification made to r_str is 
+     valid. */
+
     replace_all_substr(r_str,  "\n", in_cmd ? "\\\\" : "\n");
 
     return r_str;
@@ -28,6 +33,9 @@ static std::string check_str_in_latex(std::string r_str, bool in_cmd)
 
 std::string gen_header_str(q_token &q_state)
 {
+    /* A header string is generated from the token sequences, which will then be converted into a 
+    latex conforming string in a later function. */
+
     bool is_header = false;
 
     std::string comment;
@@ -90,12 +98,11 @@ EpicsLatexHeader::EpicsLatexHeader(std::string h_str)
 void EpicsLatexHeader::load(std::string h_str)
 {
     std::string results[] = {"", "", "", "", "", "", ""};
+    int i = 0;
 
-    for (int i = 0; i < PARAM_KEYS_LEN; i++)
+    for (auto p : PARAM_KEYS)
     {
         std::string temp;
-        std::string p = PARAM_KEYS[i];
-        
         size_t p_idx = h_str.find("/" + p);
 
         if (p_idx != std::string::npos)
@@ -113,7 +120,7 @@ void EpicsLatexHeader::load(std::string h_str)
             }
         }
 
-        results[i] = temp;
+        results[i++] = temp;
     }
     
     author = results[0];
@@ -162,8 +169,8 @@ std::string EpicsLatexFileHeader::get_latex_str(void)
 
 std::string EpicsLatexRecordHeader::get_latex_str(void)
 {
-    if (!file.empty())
-        conv += "\\subsubsection{" + check_str_in_latex(file, true) + "}\n";
+    if (!brief.empty())
+        conv += "\\subsubsection{Brief}\n" + check_str_in_latex(brief, true) + "\n";
 
     if (!desc.empty())
         conv += "\\subsubsection{Description}\n" + check_str_in_latex(desc, false) + "\n";
@@ -177,7 +184,7 @@ std::string EpicsLatexRecordHeader::get_latex_str(void)
 std::string EpicsLatexRecordParam::get_latex_str(void)
 {
     if (!param.empty())
-        conv += "\\textit{" + check_str_in_latex(param, true) + "}\\\\\\\\\n";
+        conv += "\\textit{" + check_str_in_latex(param, true) + "}\\\\\\\\ \n";
 
     return conv;
 }
@@ -266,7 +273,7 @@ std::string EpicsLatexRecordBody::get_latex_str(void)
 
     for (const auto& p : field_value_m)
     {
-        conv += p.first + ": " + p.second + "\\\\\\\\";
+        conv += check_str_in_latex(p.first, false) + ": " + check_str_in_latex(p.second, false) + "\\\\\\\\ ";
 
         if (field_comment_m.find(p.first) != field_comment_m.end())
         {
@@ -299,43 +306,45 @@ EpicsLatexGen::EpicsLatexGen(std::string tex_fn, std::string db_fn, q_token q_st
 
         trim_whitespace(name);
 
-        if (state == COMMENT)
-        {
-            if (name == "##")
-            {
-                std::string r_str = gen_header_str(q_state);
-                r_header.load(r_str);
-            }
-
-            if (name == "}")
-                r_header.clear();
-        }
-        else if (state == HEADER && name == "record")
+        if (state == HEADER && name == "record")
         {
             r_body.load(q_state);
             is_record = true;
-
-            continue;
         }
-        else if (state == RIGHT_CURLY)
+        else
         {
-            if (is_record)
+            if (state == COMMENT)
             {
-                std::string latex_r_header = r_header.get_latex_str();
-                std::string latex_r_body = r_body.get_latex_str();
+                if (name == "##")
+                {
+                    std::string r_str = gen_header_str(q_state);
+                    r_header.load(r_str);
+                }
 
-                size_t insert_idx = latex_r_body.find("}}") + 3;
-                latex_r_body.insert(insert_idx, latex_r_header);
-                latex += latex_r_body;
+                if (name == "}")
+                    r_header.clear();
+            }
+            
+            if (state == RIGHT_CURLY)
+            {
+                if (is_record)
+                {
+                    std::string latex_r_header = r_header.get_latex_str();
+                    std::string latex_r_body = r_body.get_latex_str();
+
+                    size_t insert_idx = latex_r_body.find("}}") + 3;
+                    latex_r_body.insert(insert_idx, latex_r_header);
+                    latex += latex_r_body;
+                }
+
+                is_record = false;
+
+                r_header.clear();
+                r_body.clear();
             }
 
-            is_record = false;
-
-            r_header.clear();
-            r_body.clear();
+            q_state.pop();
         }
-
-        q_state.pop();
     }
 
     latex += FILE_END;

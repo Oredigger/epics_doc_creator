@@ -118,7 +118,7 @@ static void ch_state(q_token &q_state, lex_states &state, char next, char curr, 
             else
                 state = (curr == ',' || curr == '"') ? VALUE : HEADER;
         }
-        else if (isdigit(next) || next == '.')
+        else if (isdigit(next) || next == '.' || next == '-')
         {
             state = VALUE;
         }
@@ -150,25 +150,17 @@ static q_token parse_dft(std::string r_str)
         return q_state;
 
     lex_states curr_state = HEADER;
+
+    if (!isalpha(f_str[0]) && !isdigit(f_str[0]) && f_str[0] != '_')   
+        next_state(curr_state, f_str[0]);
+
     std::string token;
+    f_str += ' ';
 
     bool is_equation = false, is_comment = false;
     size_t line_num = 1;
 
-    if (!isalpha(f_str[0]) && !isdigit(f_str[0]) && f_str[0] != '_')   
-    {
-        next_state(curr_state, f_str[0]);
-        ch_state(q_state, curr_state, f_str[1], f_str[0], line_num);
-        line_num += (curr_state == NEWLINE); 
-    }
-    else
-    {
-        token += f_str[0];
-    }
-
-    f_str += ' ';
-
-    for (size_t i = 1; i < f_str.length() - 1; i++)
+    for (size_t i = 0; i < f_str.length() - 1; i++)
     {
         char curr = f_str[i], next = f_str[i + 1];
 
