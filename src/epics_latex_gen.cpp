@@ -310,41 +310,41 @@ EpicsLatexGen::EpicsLatexGen(std::string tex_fn, std::string db_fn, q_token q_st
         {
             r_body.load(q_state);
             is_record = true;
-        }
-        else
-        {
-            if (state == COMMENT)
-            {
-                if (name == "##")
-                {
-                    std::string r_str = gen_header_str(q_state);
-                    r_header.load(r_str);
-                }
-
-                if (name == "}")
-                    r_header.clear();
-            }
             
-            if (state == RIGHT_CURLY)
+            continue;
+        }
+
+        if (state == COMMENT)
+        {
+            if (name == "##")
             {
-                if (is_record)
-                {
-                    std::string latex_r_header = r_header.get_latex_str();
-                    std::string latex_r_body = r_body.get_latex_str();
-
-                    size_t insert_idx = latex_r_body.find("}}") + 3;
-                    latex_r_body.insert(insert_idx, latex_r_header);
-                    latex += latex_r_body;
-                }
-
-                is_record = false;
-
-                r_header.clear();
-                r_body.clear();
+                std::string r_str = gen_header_str(q_state);
+                r_header.load(r_str);
             }
 
-            q_state.pop();
+            if (name == "}")
+                r_header.clear();
         }
+        
+        if (state == RIGHT_CURLY)
+        {
+            if (is_record)
+            {
+                std::string latex_r_header = r_header.get_latex_str();
+                std::string latex_r_body = r_body.get_latex_str();
+
+                size_t insert_idx = latex_r_body.find("}}") + 3;
+                latex_r_body.insert(insert_idx, latex_r_header);
+                latex += latex_r_body;
+            }
+
+            is_record = false;
+
+            r_header.clear();
+            r_body.clear();
+        }
+
+        q_state.pop();
     }
 
     latex += FILE_END;

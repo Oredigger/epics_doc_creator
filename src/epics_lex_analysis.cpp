@@ -9,41 +9,6 @@
 #include "epics_lex_analysis.hpp"
 #include "parse_util.hpp"
 
-static std::string state_2_str(lex_states state)
-{
-    switch (state)
-    {
-        case HEADER:
-            return "HEADER";
-        case TYPE:
-            return "TYPE";
-        case VALUE:
-            return "VALUE";
-        case LEFT_PAREN:
-            return "LEFT_PAREN";
-        case RIGHT_PAREN:
-            return "RIGHT_PAREN";
-        case LEFT_CURLY:
-            return "LEFT_CURLY";
-        case RIGHT_CURLY:
-            return "RIGHT_CURLY";
-        case COMMA:
-            return "COMMA";
-        case DOUBLE_QUOTE:
-            return "DOUBLE_QUOTE";
-        case NEWLINE:
-            return "NEWLINE";
-        case AT:
-            return "AT";
-        case POUND:
-            return "POUND";
-        case COMMENT:
-            return "COMMENT";
-        default:
-            return "INVALID";
-    }
-}
-
 static bool is_math_op(char next)
 {
     const std::string math_op = "()e-+*/%^><=&|!~?:., ";
@@ -325,6 +290,41 @@ EpicsLexAnalysis::EpicsLexAnalysis(std::string fn)
 q_token EpicsLexAnalysis::get_q_state(void)
 {
     return q_state;
+}
+
+static std::string state_2_str(lex_states state)
+{
+    switch (state)
+    {
+        case HEADER:
+            return "HEADER";
+        case TYPE:
+            return "TYPE";
+        case VALUE:
+            return "VALUE";
+        case LEFT_PAREN:
+            return "LEFT_PAREN";
+        case RIGHT_PAREN:
+            return "RIGHT_PAREN";
+        case LEFT_CURLY:
+            return "LEFT_CURLY";
+        case RIGHT_CURLY:
+            return "RIGHT_CURLY";
+        case COMMA:
+            return "COMMA";
+        case DOUBLE_QUOTE:
+            return "DOUBLE_QUOTE";
+        case NEWLINE:
+            return "NEWLINE";
+        case AT:
+            return "AT";
+        case POUND:
+            return "POUND";
+        case COMMENT:
+            return "COMMENT";
+        default:
+            return "INVALID";
+    }
 }
 
 void print_q_state(q_token q_state)

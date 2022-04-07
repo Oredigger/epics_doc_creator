@@ -1,177 +1,232 @@
-record(ai, "attenuation_db")
-{
-        field(SCAN, "Passive")
+# When the underlying register is of an integer type, the device support writes
+# the value to the RVAL field and it gets converted when LINR is set.
+record(ai, "H_Ai:Int") {
+  field(DTYP, "ChimeraTK")
+  field(INP,  "@h INT")
+  field(SCAN, ".1 second")
+  field(LINR, "SLOPE")
+  field(EOFF, "10")
+  field(ESLO, "0.5")
 }
 
-###  
-# /bug There are no reported bugs. I mean come on. There has to be a bug somewhere! I think I like to watch the stars. Shouldn't see this.
-#
-# /brief This is a brief description of how SCOPE_CR works. Shouldn't see this.
-#
-# /desc This detects the scope error. Shouldn't see this.
+# This also works for output records.
+record(ao, "H_Ao:Int") {
+  field(DTYP, "ChimeraTK")
+  field(OUT,  "@h INT")
+  field(LINR, "SLOPE")
+  field(EOFF, "10")
+  field(ESLO, "0.5")
+}
+
 ###
-
-record(ai, "attenuation_x")
-{
-    ###
-    # /param This is a passive record.
-    ###
-        field(SCAN, "Passive")
-}
-
-record(ai, "probe_factor")
-{
-        field(SCAN, "Passive")
-}
-
-record(ai, "scope_factor")
-{
-	field(SCAN, "Passive")
-}
-
-###  
-# /bug There are no reported bugs. I mean come on. There has to be a bug somewhere! I think I like to watch the stars. Shouldn't see this.
-#
-# /brief This is a brief description of how SCOPE_CR works. Shouldn't see this.
-#
-# /desc This detects the scope error. Shouldn't see this.
+# If the underlying register is of a floating or fixed point type, the device
+# support will write the value directly to the VAL field, even if LINR is set.
+# In order to avoid confusion, it is strongly suggested to keep LINR at its
+# default value in this case.
 ###
-
-record(aai, "raw_ct_sic")
-{
-    ###
-    # /param Example of an internal record comment.
-    ###
-        field(SCAN, "Passive")
-        field(NELM, 20)
-        field(FTVL, "DOUBLE")
-        field(FLNK, "calibrated_ct_sic")
+record(ai, "H_Ai:Double") {
+  field(DTYP, "ChimeraTK")
+  field(INP,  "@h DOUBLE")
+  field(SCAN, ".1 second")
 }
 
-record(aai, "raw_cvr_lru")
-{
-        field(SCAN, "Passive")
-        field(NELM, 20)
-        field(FTVL, "DOUBLE")
-        field(FLNK, "calibrated_cvr_lru")
+# If you really need conversion for a floating or fixed point register, you can
+# treat it as an integer register by specifying the data-type explicitly. This
+# function relies on the internal conversion facilities built into ChimeraTK
+# Device Access.
+record(ai, "H_Ai:DoubleAsInt") {
+  field(DTYP, "ChimeraTK")
+  field(INP,  "@h DOUBLE int32")
+  field(SCAN, ".1 second")
+  field(LINR, "SLOPE")
+  field(EOFF, "10")
+  field(ESLO, "0.5")
 }
 
-record(aai, "raw_cvr_compcan")
-{
-        field(SCAN, "Passive")
-        field(NELM, 20)
-        field(FTVL, "DOUBLE")
-        field(FLNK, "calibrated_cvr_compcan")
+# bi and bo records are supported as well. For these records, the device support
+# always uses the RVAL field. Typically, bi and bo records are used for boolean
+# or integer registers, but in theory it is also possible to use the with fixed
+# or floating point registers.
+record(bi, "H_Bi:Bool") {
+  field(DTYP, "ChimeraTK")
+  field(INP,  "@h BOOL")
+  field(SCAN, ".1 second")
+  field(ZNAM, "0")
+  field(ONAM, "1")
 }
 
-record(aai, "raw_rvm_lru")
-{
-        field(SCAN, "Passive")
-        field(NELM, 20)
-        field(FTVL, "DOUBLE")
-        field(FLNK, "calibrated_rvm_lru")
+# If you want to make sure that any output record (not just the bo record)
+# initially is not in the undefined state, causing an INVALID alarm, you have to
+# set PINI to YES. In general, this device supports tries to initialize a
+# records value with the value read from the register, but - depending on the
+# device backend - reading an initial value might not be possible or writing
+# back the same value might still have side-effects.
+record(bo, "H_Bo:Bool") {
+  field(DTYP, "ChimeraTK")
+  field(OUT,  "@h BOOL")
+  field(PINI, "YES")
+  field(ZNAM, "0")
+  field(ONAM, "1")
 }
 
-record(aai, "raw_rvm_sic")
-{
-        field(SCAN, "Passive")
-        field(NELM, 20)
-        field(FTVL, "DOUBLE")
-        field(FLNK, "calibrated_rvm_sic")
+# longin and longout records only have a VAL field, so the device support always
+# uses that field. Like bi/bo records, longin/longout is mostly useful for
+# integer registers, but strictly speaking, they can be used with floating point
+# registers as well.
+record(longin, "H_Longin:Int") {
+  field(DTYP, "ChimeraTK")
+  field(INP,  "@h INT")
+  field(SCAN, ".1 second")
 }
 
-record(aai, "raw_stage_volt")
-{
-        field(SCAN, "Passive")
-        field(NELM, 20)
-        field(FTVL, "DOUBLE")
-        field(FLNK, "calibrated_stage_volt")
+record(longout, "H_Longout:Int") {
+  field(DTYP, "ChimeraTK")
+  field(OUT,  "@h INT")
 }
 
-record(aai, "raw_timing")
-{
-	field(SCAN, "Passive")
-        field(NELM, 20)
-        field(FTVL, "DOUBLE")
-        field(FLNK, "calibrated_timing")
+# mbbi, mbbo, mbbiDirect, and mbboDirect basically do the same as bi and bo, but
+# for multiple bits. Again, they are most useful when being used with integer
+# values.
+record(mbbi, "H_Mbbi:Int") {
+  field(DTYP, "ChimeraTK")
+  field(INP,  "@h INT")
+  field(SCAN, ".1 second")
+  field(ZRVL, "0")
+  field(ZRST, "0")
+  field(ONVL, "1")
+  field(ONST, "1")
+  field(TWVL, "2")
+  field(TWST, "2")
+  field(THVL, "3")
+  field(THST, "3")
+  field(FRVL, "4")
+  field(FRST, "4")
+  field(FVVL, "5")
+  field(FVST, "5")
+  field(SXVL, "6")
+  field(SXST, "6")
+  field(SVVL, "7")
+  field(SVST, "7")
+  field(EIVL, "8")
+  field(EIST, "8")
+  field(NIVL, "9")
+  field(NIST, "9")
+  field(TEVL, "10")
+  field(TEST, "10")
+  field(ELVL, "11")
+  field(ELST, "11")
+  field(TVVL, "12")
+  field(TVST, "12")
+  field(TTVL, "13")
+  field(TTST, "13")
+  field(FTVL, "14")
+  field(FTST, "14")
+  field(FFVL, "15")
+  field(FFST, "15")
 }
 
-###  
-# /bug There are no reported bugs. I mean come on. There has to be a bug somewhere! I think I like to watch the stars. Shouldn't see this.
-#
-# /brief This is a brief description of how SCOPE_CR works. Shouldn't see this.
-#
-# /desc This detects the scope error. Shouldn't see this.
-###
-
-#record(acalcout, "calibrated_ct_sic")
-#{
-#        field(SCAN, "Passive")
-#        field(NELM, 20)
-#        field(INAA, "raw_ct_sic")
-#        field(INPA, "attenuation_db_ct_sic")
-#        field(INPB,"attenuation_x_ct_sic")
-#        field(INPC,"probe_factor_ct_sic")
-#        field(CALC, "(AA*10**(A/20))*(B+C)")
-#}
-
-record(acalcout, "calibrated_cvr_lru")
-{
-	field(SCAN, "Passive")
-	field(NELM, 20)
-	field(INAA, "raw_cvr_lru")
-	field(INPA,"attenuation_db")
-        field(INPB,"probe_factor")
-        field(CALC, "(AA*10**(A/20))/B")
-
-}	
-
-record(acalcout, "calibrated_cvr_compcan")
-{
-	field(SCAN, "Passive")
-	field(NELM, 20)
-	field(INAA, "raw_cvr_compcan")
-	field(INPA,"attenuation_db")
-        field(INPB,"probe_factor")
-        field(CALC, "(AA*10**(A/20))*B")
+record(mbbo, "H_Mbbo:Int") {
+  field(DTYP, "ChimeraTK")
+  field(OUT,  "@h INT")
+  field(ZRVL, "0")
+  field(ZRST, "0")
+  field(ONVL, "1")
+  field(ONST, "1")
+  field(TWVL, "2")
+  field(TWST, "2")
+  field(THVL, "3")
+  field(THST, "3")
+  field(FRVL, "4")
+  field(FRST, "4")
+  field(FVVL, "5")
+  field(FVST, "5")
+  field(SXVL, "6")
+  field(SXST, "6")
+  field(SVVL, "7")
+  field(SVST, "7")
+  field(EIVL, "8")
+  field(EIST, "8")
+  field(NIVL, "9")
+  field(NIST, "9")
+  field(TEVL, "10")
+  field(TEST, "10")
+  field(ELVL, "11")
+  field(ELST, "11")
+  field(TVVL, "12")
+  field(TVST, "12")
+  field(TTVL, "13")
+  field(TTST, "13")
+  field(FTVL, "14")
+  field(FTST, "14")
+  field(FFVL, "15")
+  field(FFST, "15")
 }
 
-record(acalcout, "calibrated_rvm_lru")
-{
-	field(SCAN, "Passive")
-	field(NELM, 20)
-	field(INAA, "raw_rvm_lru")
-	field(INPA,"attenuation_db")
-        field(INPB,"probe_factor")
-        field(CALC, "(AA*10**(A/20))*B")
+record(mbbiDirect, "H_MbbiDirect:Int") {
+  field(DTYP, "ChimeraTK")
+  field(INP,  "@h INT")
+  field(SCAN, ".1 second")
 }
 
-record(acalcout, "calibrated_rvm_sic")
-{
-	field(SCAN, "Passive")
-	field(NELM, 20)
-	field(INAA, "raw_rvm_sic")
-	field(INPA,"attenuation_db")
-        field(INPB,"probe_factor")
-        field(CALC, "(AA*10**(A/20))*B")
+record(mbboDirect, "H_MbboDirect:Int") {
+  field(DTYP, "ChimeraTK")
+  field(OUT,  "@h INT")
 }
 
-record(acalcout, "calibrated_stage_volt")
-{
-	field(SCAN, "Passive")
-	field(NELM, 20)
-	field(INAA, "raw_stage_volt")
-	field(INPA,"attenuation_db")
-        field(INPB,"probe_factor")
-	field(INPC, "scope_factor")
-        field(CALC, "(AA*10**(A/20))*B*C")
+# Registers can also be mapped to string records. This can be useful if the
+# underlying register type is not directly supported by the EPICS device
+# support, but ChimeraTK Device Access knows how to convert to and from strings.
+# For string records, you typically have to explicitly specify the data type for
+# the register ("string") as part of the address.
+# In additition to the stringin and stringout record, the lsi and lso are
+# supported when using a sufficiently recent release of EPICS Base. This is
+# useful when the strings are too long to fit into the 39 characters that are
+# allowed by the stringin and stringout record.
+record(stringin, "H_Stringin:Int") {
+  field(DTYP, "ChimeraTK")
+  field(INP,  "@h INT string")
+  field(SCAN, ".1 second")
 }
 
-record(acalcout, "calibrated_timing")
-{
-	field(SCAN, "Passive")
-	field(NELM, 20)
-	field(INAA, "raw_timing")
-	field(INPA,"attenuation_db")
-        field(CALC, "AA*10**(A/20)")
+record(stringout, "H_Stringout:Int") {
+  field(DTYP, "ChimeraTK")
+  field(OUT,  "@h INT string")
+}
+
+# Registers that represent arrays can be accessed as well. The aai and aao
+# records must be used for that purpose and the number of elements in the record
+# must exactly match the number of elements in the register. The data types must
+# match as well (except for signed / unsigned conversion).
+record(aai, "H_Aai:Double") {
+  field(FTVL, "DOUBLE")
+  field(NELM, "10")
+  field(DTYP, "ChimeraTK")
+  field(INP,  "@h DOUBLE_ARRAY")
+  field(SCAN, ".1 second")
+}
+
+record(aao, "H_Aao:Double") {
+  field(FTVL, "DOUBLE")
+  field(NELM, "10")
+  field(DTYP, "ChimeraTK")
+  field(OUT,  "@h DOUBLE_ARRAY")
+}
+
+# Floating or fixed point numbers are automatically detected as double, signed
+# integers as int32 and unsigned integers as uint32. This means that the data
+# type has to be specified explicitly, if this does not match the arrays element
+# type.
+record(aai, "H_Aai:Short") {
+  field(FTVL, "SHORT")
+  field(NELM, "10")
+  field(DTYP, "ChimeraTK")
+  field(INP,  "@h SHORT_ARRAY int16")
+  field(SCAN, ".1 second")
+}
+
+record(aao, "H_Aao:Short") {
+  field(FTVL, "SHORT")
+  field(NELM, "10")
+  field(DTYP, "ChimeraTK")
+  field(OUT,  "@h SHORT_ARRAY int16")
 }
