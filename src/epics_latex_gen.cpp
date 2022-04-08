@@ -288,8 +288,8 @@ std::string EpicsLatexRecordBody::get_latex_str(void)
 EpicsLatexGen::EpicsLatexGen(std::string tex_fn, std::string db_fn, q_token q_state)
 {
     latex += DOC_HEADER + FILE_BEGIN;
-
     std::string h_str = gen_header_str(q_state);
+    
     EpicsLatexFileHeader f_header(h_str); 
     latex += f_header.get_latex_str();
     
@@ -350,8 +350,7 @@ EpicsLatexGen::EpicsLatexGen(std::string tex_fn, std::string db_fn, q_token q_st
     latex += FILE_END;
     struct stat buf;
     
-    if (stat("./tex", &buf))
-        mkdir("./tex", 777);
+    if (stat("./tex", &buf)) mkdir("./tex", 755);
 
     std::ofstream fout;
     fout.open("./tex/" + tex_fn + ".tex", std::ofstream::out);

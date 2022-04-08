@@ -59,6 +59,7 @@ record(bo, "SCOPE:RUN") {
 record(fanout, "SCOPE:RUNx") {
     field(LNK1, "SCOPE:DISx")
     field(LNK2, "SCOPE:ENAx")
+    field(LNK2, "SCOPE:RUN")
     field(TPRO, "1")
 }
 
@@ -68,7 +69,7 @@ record(bo, "SCOPE:ENAx") {
     field(DTYP, "stream")
     field(OUT , "@hp3458a.proto setup 5600")
     field(TPRO, "1")
-    field(FLNK, "SCOPE:I.PROC CA") # start first measurement
+    field(FLNK, "SCOPE:I") # start first measurement
 }
 
 record(bo, "SCOPE:DISx") {
@@ -83,20 +84,20 @@ record(bo, "SCOPE:DISx") {
 }
 
 
-#record(ai, "SCOPE:I") {
-#    field(SDIS, "SCOPE:RUN NPP")
-#    field(DISV, "0") # disable while Paused
-#    field(DTYP, "stream")
-#    field(INP , "@hp3458a.proto sample 5600")
-#    # This should not work
-#    field(EGU , "A")
-#    field(PREC, "9")
-#    ###
-#    # /param But this will
-#    ###
-#    field(FLNK, "SCOPE:CNT")
-#    field(TPRO, "1")
-#}
+record(ai, "SCOPE:I") {
+    field(SDIS, "SCOPE:RUN NPP")
+    field(DISV, "0") # disable while Paused
+    field(DTYP, "stream")
+    field(INP , "@hp3458a.proto sample 5600")
+    # This should not work
+    field(EGU , "A")
+    field(PREC, "9")
+    ###
+    # /param But this will
+    ###
+    field(FLNK, "SCOPE:CNT")
+    field(TPRO, "1")
+}
 
 record(calc, "SCOPE:RATE") {
     field(DESC, "Update rate")

@@ -1,5 +1,10 @@
 #include "epics_db_parse.hpp"
 
+/*void new_parse_tree(q_token &q_state)
+{
+    
+}*/
+
 /*short check_calc_eq(std::string pinfix)
 {
     short error = CALC_ERR_NONE;
