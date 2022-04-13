@@ -428,7 +428,7 @@ std::string EpicsTempFileLexAnalysis::prep_r_str(std::string r_str)
 
     return f_str;
 
-void EpicsTempFileLexAnalysis::parse_dft(void)
-{
-
-}
+//void EpicsTempFileLexAnalysis::parse_dft(void)
+//{
+//
+//}
