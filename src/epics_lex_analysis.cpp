@@ -90,13 +90,9 @@ static void ch_state(q_token &q_state, lex_states &state, char next, char curr, 
                 state = (curr == ',' || curr == '"') ? VALUE : HEADER;
         }
         else if (isdigit(next) || next == '.' || next == '-')
-        {
             state = VALUE;
-        }
         else
-        {
             next_state(state, next);
-        }
     }
 }
 
@@ -274,144 +270,105 @@ void EpicsDbFileLexAnalysis::parse_dft(void)
     {
         char curr = f_str[i], next = f_str[i + 1];
 
-        switch (curr_state)
+        if (curr_state == HEADER)
         {
-            case HEADER:
-                token += curr;
+            token += curr;
 
+            if (!isalpha(next) && !isdigit(next) 
+                && next != '_' && next != ':' && !is_raw)
+                push_state_clear_token(q_state, curr_state, token, next, line_num);
+        }
+        else if (curr_state == TYPE)
+        {
+            token += curr;
+            
+            if (!isalpha(next) && !isdigit(next) && next != '_' && !is_raw)
+            {
+                is_equation = (token == "CALC");
+                push_state_clear_token(q_state, curr_state, token, next, line_num);
+            }
+        }
+        else if (curr_state == VALUE)
+        {
+            token += curr;
+
+            if (is_equation)
+            {
+                if (next == '\n' || (!isalpha(next) && !isdigit(next) 
+                    && next != ':' && !is_math_op(next)))
+                {
+                    push_state_clear_token(q_state, curr_state, token, next, line_num);
+                    is_equation = false;
+                }
+            }
+            else
+            {
                 if (!isalpha(next) && !isdigit(next) 
-                    && next != '_' && next != ':' && !is_raw)
+                    && next != '-' && next != '_' && next != '.' 
+                    && next != 'e' && next != 'E' && !is_raw)
                     push_state_clear_token(q_state, curr_state, token, next, line_num);
-                
-                break;
-            
-            case TYPE:
-                token += curr;
-                
-                if (!isalpha(next) && !isdigit(next) && next != '_' && !is_raw)
-                {
-                    is_equation = (token == "CALC");
-                    push_state_clear_token(q_state, curr_state, token, next, line_num);
-                }
-
-                break;
-
-            case VALUE:
-                token += curr;
-
-                if (is_equation)
-                {
-                    if (next == '\n' || (!isalpha(next) && !isdigit(next) 
-                        && next != ':' && !is_math_op(next)))
-                    {
-                        push_state_clear_token(q_state, curr_state, token, next, line_num);
-                        is_equation = false;
-                    }
-                }
-                else
-                {
-                    if (!isalpha(next) && !isdigit(next) 
-                        && next != '-' && next != '_' && next != '.' 
-                        && next != 'e' && next != 'E' && !is_raw)
-                        push_state_clear_token(q_state, curr_state, token, next, line_num);
-                }
-
-                break;
-            
-            case LEFT_PAREN:
-                if (!is_equation)
-                    ch_state(q_state, curr_state, next, curr, line_num);
-                
-                if (is_equation && curr_state != VALUE)
-                    curr_state = VALUE;
-
-                break;
-            
-            case RIGHT_PAREN:
-                if (!is_equation)
-                    ch_state(q_state, curr_state, next, curr, line_num);
-
-                if (is_equation && curr_state != VALUE)
-                    curr_state = VALUE;
-                
-                break;
-            
-            case LEFT_CURLY:
-                if (!is_equation)
-                    ch_state(q_state, curr_state, next, curr, line_num);
-
-                if (is_equation && curr_state != VALUE)
-                    curr_state = VALUE;
-
-                break;
-            
-            case RIGHT_CURLY:
-                if (!is_equation)
-                    ch_state(q_state, curr_state, next, curr, line_num);
-
-                if (is_equation && curr_state != VALUE)
-                    curr_state = VALUE;
-
-                break;
-            
-            case COMMA:
+            }
+        }
+        else if (curr_state == LEFT_PAREN || curr_state == RIGHT_PAREN 
+                    || curr_state == LEFT_CURLY || curr_state == RIGHT_CURLY)
+        {
+            if (!is_equation)
                 ch_state(q_state, curr_state, next, curr, line_num);
-                break;
-
-            case DOUBLE_QUOTE:
-                ch_state(q_state, curr_state, next, curr, line_num);
-
-                if (is_equation && curr_state != VALUE)
-                    curr_state = VALUE;
-
-                break;
-
-            case NEWLINE:
-                is_raw = false;
-                is_equation = false;
-
-                ch_state(q_state, curr_state, next, curr, line_num);
-                line_num++;
-
-                break;
-
-            case AT:
-                is_equation = true;
-                ch_state(q_state, curr_state, next, curr, line_num);
-
-                break;
             
-            case POUND:
-                is_raw = true;        
-                ch_state(q_state, curr_state, next, curr, line_num);
+            if (is_equation && curr_state != VALUE)
+                curr_state = VALUE;
+        }
+        else if (curr_state == COMMA)
+        {
+            ch_state(q_state, curr_state, next, curr, line_num);
+        }
+        else if (curr_state == DOUBLE_QUOTE)
+        {
+            ch_state(q_state, curr_state, next, curr, line_num);
 
-                break;
+            if (is_equation && curr_state != VALUE)
+                curr_state = VALUE;
+        }
+        else if (curr_state == NEWLINE)
+        {
+            is_raw = false;
+            is_equation = false;
 
-            case COMMENT:
-                token += curr;
+            ch_state(q_state, curr_state, next, curr, line_num);
+            line_num++;
+        }
+        else if (curr_state == AT)
+        {
+            is_equation = true;
+            ch_state(q_state, curr_state, next, curr, line_num);
+        }
+        else if (curr_state == POUND)
+        {
+            is_raw = true;        
+            ch_state(q_state, curr_state, next, curr, line_num);
+        }
+        else if (curr_state == COMMENT)
+        {
+            token += curr;
 
-                if (next == '\n')
-                    push_state_clear_token(q_state, curr_state, token, next, line_num);
+            if (next == '\n')
+                push_state_clear_token(q_state, curr_state, token, next, line_num);
+        }
+        else if (curr_state == PERCENT)
+        {
+            is_raw = true;        
+            ch_state(q_state, curr_state, next, curr, line_num);
+        }
+        else if (curr_state == C_CODE)
+        {
+            token += curr;
 
-                break;
-            
-            case PERCENT:
-                is_raw = true;        
-                ch_state(q_state, curr_state, next, curr, line_num);
-
-                break;
-
-            case C_CODE:
-                token += curr;
-
-                if (next == '\n')
-                    push_state_clear_token(q_state, curr_state, token, next, line_num);
-
-                break;
-
-            default:
-                ch_state(q_state, curr_state, next, curr, line_num);
-                break;
+            if (next == '\n')
+                push_state_clear_token(q_state, curr_state, token, next, line_num);
+        }
+        else
+        {
+            ch_state(q_state, curr_state, next, curr, line_num);
         }
     }
 }
@@ -427,8 +384,7 @@ std::string EpicsTempFileLexAnalysis::prep_r_str(std::string r_str)
     }
 
     return f_str;
+}
 
-//void EpicsTempFileLexAnalysis::parse_dft(void)
-//{
-//
-//}
+void EpicsTempFileLexAnalysis::parse_dft(void)
+{}
