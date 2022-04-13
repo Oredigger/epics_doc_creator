@@ -421,8 +421,6 @@ std::string EpicsTempFileLexAnalysis::prep_r_str(std::string r_str)
     remove_all_char(r_str, '\t');
     remove_all_char(r_str, '\r');
 
-    // Not the most optimal solution - however this prevents memory leaks and unconditional branching from 
-    // occurring though!
     for (size_t i = 0; i < r_str.length(); i++)
     {
         f_str += r_str[i];
