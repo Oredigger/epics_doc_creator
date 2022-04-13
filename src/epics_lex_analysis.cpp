@@ -245,23 +245,21 @@ std::string EpicsDbFileLexAnalysis::prep_r_str(std::string r_str)
         }
     }
 
+    f_str += ' ';
     return f_str;
 }
 
 void EpicsDbFileLexAnalysis::parse_dft(void)
 {
     f_str = prep_r_str(r_str);
-
-    if (f_str.length() < 2) 
-        return;
-
     lex_states curr_state = HEADER;
+
+    if (!f_str.length()) return;
 
     if (!isalpha(f_str[0]) && !isdigit(f_str[0]) && f_str[0] != '_')   
         next_state(curr_state, f_str[0]);
 
     std::string token;
-    f_str += ' ';
 
     bool is_equation = false, is_raw = false;
     size_t line_num = 1;
