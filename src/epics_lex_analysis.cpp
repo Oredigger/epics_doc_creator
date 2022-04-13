@@ -53,8 +53,11 @@ static void next_state(lex_states &state, char next)
         case '#':
             state = POUND;
             break;
+        case '%':
+            state = PERCENT;
+            break;
         default:
-            if (state != VALUE && state != COMMENT) state = INVALID;
+            if (state != VALUE && state != COMMENT && state != C_CODE) state = INVALID;
             break;
     }
 }
@@ -63,9 +66,12 @@ static void ch_state(q_token &q_state, lex_states &state, char next, char curr, 
 {
     q_state.push(std::make_tuple(state, std::string(1, curr), line_num));
 
-    if (state == POUND)
+    if (state == POUND || state == PERCENT)
     {
-        state = (next == '\n') ? NEWLINE : COMMENT;
+        if (next == '\n')
+            state = NEWLINE;
+        else
+            state = (state == POUND) ? COMMENT : C_CODE;
     }
     else if (state == AT)
     {
@@ -106,13 +112,152 @@ static void push_state_clear_token(q_token &q_state, lex_states &state, std::str
     }
 }
 
-static q_token parse_dft(std::string r_str)
+static std::string state_2_str(lex_states state)
 {
-    q_token q_state;
-    std::string f_str = prep_r_str(r_str);
+    switch (state)
+    {
+        case HEADER:
+            return "HEADER";
+        case TYPE:
+            return "TYPE";
+        case VALUE:
+            return "VALUE";
+        case LEFT_PAREN:
+            return "LEFT_PAREN";
+        case RIGHT_PAREN:
+            return "RIGHT_PAREN";
+        case LEFT_CURLY:
+            return "LEFT_CURLY";
+        case RIGHT_CURLY:
+            return "RIGHT_CURLY";
+        case COMMA:
+            return "COMMA";
+        case DOUBLE_QUOTE:
+            return "DOUBLE_QUOTE";
+        case NEWLINE:
+            return "NEWLINE";
+        case AT:
+            return "AT";
+        case POUND:
+            return "POUND";
+        case COMMENT:
+            return "COMMENT";
+        case PERCENT:
+            return "PERCENT";
+        case C_CODE:
+            return "C_CODE";
+        default:
+            return "INVALID";
+    }
+}
 
-    if (f_str.length() < 2)
-        return q_state;
+EpicsLexAnalysis::EpicsLexAnalysis(void)
+{}
+
+EpicsLexAnalysis::EpicsLexAnalysis(std::string fn)
+{
+    if (!q_state.empty())
+    {
+        q_token empty;
+        q_state.swap(empty);
+    }
+
+    std::ifstream fin;
+    fin.open(fn, std::ifstream::in);
+
+    if (fin.good())
+    {
+        std::ostringstream os;
+
+        if (os.good())
+        {
+            os << fin.rdbuf() << std::endl;
+            r_str = os.str();
+        }
+    }
+
+    fin.close();
+}
+
+q_token EpicsLexAnalysis::get_q_state(void)
+{
+    return q_state;
+}
+
+void EpicsLexAnalysis::print_q_state(void)
+{
+    while (!q_state.empty())
+    {
+        auto elem = q_state.front();
+        std::string token = (std::get<0>(elem) == NEWLINE) ? 
+                            "\\n" : std::get<1>(elem);
+
+        std::cout << state_2_str(std::get<0>(elem)) << "  " << token << "  " << std::get<2>(elem) << std::endl;
+        
+        if (std::get<0>(elem) == NEWLINE)
+            std::cout << "\n";
+
+        q_state.pop();
+    }
+}
+
+std::string EpicsDbFileLexAnalysis::prep_r_str(std::string r_str)
+{
+    remove_all_char(r_str, '\t');
+    remove_all_char(r_str, '\r');
+
+    // Do not remove spaces in substrings that are surrounded by quotes.
+    std::queue<size_t> q_quote_loc = get_all_char_pos(r_str, '"');
+    bool is_comment = false;
+
+    std::string f_str;
+    size_t q_idx_0 = 0, q_idx_1 = 0;
+
+    // Not the most optimal solution - however this prevents memory leaks and unconditional branching from 
+    // occurring though!
+    for (size_t i = 0; i < r_str.length(); i++)
+    {
+        if (r_str[i] == '#' || r_str[i] == '\n')
+            is_comment = !is_comment;
+    
+        if (i == q_idx_1)
+        {
+            if (q_quote_loc.empty())
+            {
+                q_idx_1 = q_idx_0;
+            }
+            else
+            {
+                q_idx_0 = q_quote_loc.front();
+                q_quote_loc.pop();
+
+                q_idx_1 = q_quote_loc.front();
+                q_quote_loc.pop();
+            }
+        }
+
+        if (!is_comment)
+        {
+            bool bounds_flag = (i <= q_idx_0 || i >= q_idx_1);
+
+            if ((bounds_flag && r_str[i] != ' ') || !bounds_flag)
+                f_str += r_str[i];
+        }
+        else
+        {
+            f_str += r_str[i];
+        }
+    }
+
+    return f_str;
+}
+
+void EpicsDbFileLexAnalysis::parse_dft(void)
+{
+    f_str = prep_r_str(r_str);
+
+    if (f_str.length() < 2) 
+        return;
 
     lex_states curr_state = HEADER;
 
@@ -122,7 +267,7 @@ static q_token parse_dft(std::string r_str)
     std::string token;
     f_str += ' ';
 
-    bool is_equation = false, is_comment = false;
+    bool is_equation = false, is_raw = false;
     size_t line_num = 1;
 
     for (size_t i = 0; i < f_str.length() - 1; i++)
@@ -135,7 +280,7 @@ static q_token parse_dft(std::string r_str)
                 token += curr;
 
                 if (!isalpha(next) && !isdigit(next) 
-                    && next != '_' && next != ':' && !is_comment)
+                    && next != '_' && next != ':' && !is_raw)
                     push_state_clear_token(q_state, curr_state, token, next, line_num);
                 
                 break;
@@ -143,7 +288,7 @@ static q_token parse_dft(std::string r_str)
             case TYPE:
                 token += curr;
                 
-                if (!isalpha(next) && !isdigit(next) && next != '_' && !is_comment)
+                if (!isalpha(next) && !isdigit(next) && next != '_' && !is_raw)
                 {
                     is_equation = (token == "CALC");
                     push_state_clear_token(q_state, curr_state, token, next, line_num);
@@ -167,7 +312,7 @@ static q_token parse_dft(std::string r_str)
                 {
                     if (!isalpha(next) && !isdigit(next) 
                         && next != '-' && next != '_' && next != '.' 
-                        && next != 'e' && next != 'E' && !is_comment)
+                        && next != 'e' && next != 'E' && !is_raw)
                         push_state_clear_token(q_state, curr_state, token, next, line_num);
                 }
 
@@ -222,7 +367,7 @@ static q_token parse_dft(std::string r_str)
                 break;
 
             case NEWLINE:
-                is_comment = false;
+                is_raw = false;
                 is_equation = false;
 
                 ch_state(q_state, curr_state, next, curr, line_num);
@@ -237,12 +382,26 @@ static q_token parse_dft(std::string r_str)
                 break;
             
             case POUND:
-                is_comment = true;        
+                is_raw = true;        
                 ch_state(q_state, curr_state, next, curr, line_num);
 
                 break;
 
             case COMMENT:
+                token += curr;
+
+                if (next == '\n')
+                    push_state_clear_token(q_state, curr_state, token, next, line_num);
+
+                break;
+            
+            case PERCENT:
+                is_raw = true;        
+                ch_state(q_state, curr_state, next, curr, line_num);
+
+                break;
+
+            case C_CODE:
                 token += curr;
 
                 if (next == '\n')
@@ -255,91 +414,23 @@ static q_token parse_dft(std::string r_str)
                 break;
         }
     }
-
-    return q_state;
 }
 
-EpicsLexAnalysis::EpicsLexAnalysis(std::string fn)
+std::string EpicsTempFileLexAnalysis::prep_r_str(std::string r_str)
 {
-    if (!q_state.empty())
+    remove_all_char(r_str, '\t');
+    remove_all_char(r_str, '\r');
+
+    // Not the most optimal solution - however this prevents memory leaks and unconditional branching from 
+    // occurring though!
+    for (size_t i = 0; i < r_str.length(); i++)
     {
-        q_token empty;
-        q_state.swap(empty);
+        f_str += r_str[i];
     }
 
-    std::string r_str;
-    std::ifstream fin;
+    return f_str;
 
-    fin.open(fn, std::ifstream::in);
-
-    if (fin.good())
-    {
-        std::ostringstream os;
-
-        if (os.good())
-        {
-            os << fin.rdbuf() << std::endl;
-            r_str = os.str();
-        }
-    }
-
-    fin.close();
-    q_state = parse_dft(r_str);
-}
-
-q_token EpicsLexAnalysis::get_q_state(void)
+void EpicsTempFileLexAnalysis::parse_dft(void)
 {
-    return q_state;
-}
 
-static std::string state_2_str(lex_states state)
-{
-    switch (state)
-    {
-        case HEADER:
-            return "HEADER";
-        case TYPE:
-            return "TYPE";
-        case VALUE:
-            return "VALUE";
-        case LEFT_PAREN:
-            return "LEFT_PAREN";
-        case RIGHT_PAREN:
-            return "RIGHT_PAREN";
-        case LEFT_CURLY:
-            return "LEFT_CURLY";
-        case RIGHT_CURLY:
-            return "RIGHT_CURLY";
-        case COMMA:
-            return "COMMA";
-        case DOUBLE_QUOTE:
-            return "DOUBLE_QUOTE";
-        case NEWLINE:
-            return "NEWLINE";
-        case AT:
-            return "AT";
-        case POUND:
-            return "POUND";
-        case COMMENT:
-            return "COMMENT";
-        default:
-            return "INVALID";
-    }
-}
-
-void print_q_state(q_token q_state)
-{
-    while (!q_state.empty())
-    {
-        auto elem = q_state.front();
-        std::string token = (std::get<0>(elem) == NEWLINE) ? 
-                            "\\n" : std::get<1>(elem);
-
-        std::cout << state_2_str(std::get<0>(elem)) << "  " << token << "  " << std::get<2>(elem) << std::endl;
-        
-        if (std::get<0>(elem) == NEWLINE)
-            std::cout << "\n";
-
-        q_state.pop();
-    }
 }

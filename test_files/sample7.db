@@ -1,13 +1,18 @@
-
 #a
-#back
-
+%back
+()
 #
+%hmm
 #}}
+}}
 
 record(fanout, "rec_3")
 {
     field(LNK0, "rec_2")
+    %hmm
+    a
+    %hee
+    ,
     field(LNK1, "rec_7")
 }
 

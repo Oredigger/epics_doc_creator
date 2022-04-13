@@ -20,6 +20,8 @@ enum lex_states
     AT,
     POUND,
     COMMENT,
+    PERCENT,
+    C_CODE,
     INVALID,
 };
 
@@ -29,12 +31,39 @@ class EpicsLexAnalysis
 {
     public:
         EpicsLexAnalysis(std::string fn);
+        EpicsLexAnalysis(void);
+
         q_token get_q_state(void);
+        void print_q_state(void);
+
+        virtual std::string prep_r_str(std::string r_str) = 0;
+        virtual void parse_dft(void) = 0;
         
-    private:
+    protected:
         q_token q_state;
+        std::string f_str;
+        std::string r_str;
 };
 
-void print_q_state(q_token q_state);
+class EpicsDbFileLexAnalysis : public EpicsLexAnalysis
+{
+    public:
+        EpicsDbFileLexAnalysis(std::string fn) : EpicsLexAnalysis(fn){};
+        EpicsDbFileLexAnalysis(void) : EpicsLexAnalysis(){};
+
+        std::string prep_r_str(std::string r_str);
+        void parse_dft(void);
+};
+
+class EpicsTempFileLexAnalysis : public EpicsLexAnalysis
+{
+    public:
+        EpicsTempFileLexAnalysis(std::string fn) : EpicsLexAnalysis(fn){};
+        EpicsTempFileLexAnalysis(void) : EpicsLexAnalysis(){};
+
+        std::string prep_r_str(std::string r_str);
+        void parse_dft(void);
+};
+
 
 #endif

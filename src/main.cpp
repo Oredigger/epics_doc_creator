@@ -10,16 +10,22 @@
 #include "epics_latex_gen.hpp"
 #include "epics_record_chain.hpp"
 
+// The command argument will look like the following
+// ./main --files test_files/sample7.db test_files/sample1.db --subs test_files/x.sub
+//
+
 int main(int argc, char *argv[])
 {
     //if (argc <= 1)
     //    return EXIT_FAILURE;
 
-    EpicsLexAnalysis x("test_files/sample2.db");
-    q_token q_state = x.get_q_state();
-    
-    EpicsRecordChain y(q_state);
-    y.print_adj_mat();
+    EpicsDbFileLexAnalysis x("test_files/sample7.db");
+
+    x.parse_dft();
+    x.get_q_state();
+    x.print_q_state();
+    //EpicsRecordChain y(q_state);
+    //y.print_adj_mat();
 
     //EpicsLatexGen gen(argv[2], argv[1], q_state);
     return EXIT_SUCCESS;
