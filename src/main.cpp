@@ -19,13 +19,15 @@ int main(int argc, char *argv[])
     //if (argc <= 1)
     //    return EXIT_FAILURE;
 
-    EpicsDbFileLexAnalysis x("test_files/sample2.db");
+    EpicsDbFileLexAnalysis x("test_files/sample10.db");
     x.parse_dft();
 
     q_token q_state = x.get_q_state();
     x.print_q_state();
-    //EpicsRecordChain y(q_state);
-    //y.print_adj_mat();
-    EpicsLatexGen gen("test", "test_files/sample2.db", q_state);
+    
+    EpicsRecordChain y(q_state);
+    y.print_adj_mat();
+    
+    //EpicsLatexGen gen("test", "test_files/sample2.db", q_state);
     return EXIT_SUCCESS;
 }
