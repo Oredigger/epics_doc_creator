@@ -197,24 +197,25 @@ void EpicsLexAnalysis::print_q_state(void)
     }
 }
 
-std::string EpicsDbFileLexAnalysis::prep_r_str(std::string r_str)
+void EpicsDbFileLexAnalysis::prep_r_str(void)
 {
     remove_all_char(r_str, '\t');
     remove_all_char(r_str, '\r');
 
     // Do not remove spaces in substrings that are surrounded by quotes.
     std::queue<size_t> q_quote_loc = get_all_char_pos(r_str, '"');
+    
     bool is_comment = false;
-
-    std::string f_str;
     size_t q_idx_0 = 0, q_idx_1 = 0;
 
     // Not the most optimal solution - however this prevents memory leaks and unconditional branching from 
     // occurring though!
     for (size_t i = 0; i < r_str.length(); i++)
     {
-        if (r_str[i] == '#' || r_str[i] == '\n')
-            is_comment = !is_comment;
+        if (r_str[i] == '#')
+            is_comment = true;
+        if (r_str[i] == '\n')
+            is_comment = false;
     
         if (i == q_idx_1)
         {
@@ -246,13 +247,12 @@ std::string EpicsDbFileLexAnalysis::prep_r_str(std::string r_str)
     }
 
     f_str += ' ';
-    return f_str;
 }
 
 void EpicsDbFileLexAnalysis::parse_dft(void)
 {
-    f_str = prep_r_str(r_str);
     lex_states curr_state = HEADER;
+    prep_r_str();
 
     if (!f_str.length()) return;
 
@@ -371,7 +371,7 @@ void EpicsDbFileLexAnalysis::parse_dft(void)
     }
 }
 
-std::string EpicsTempFileLexAnalysis::prep_r_str(std::string r_str)
+void EpicsTempFileLexAnalysis::prep_r_str(void)
 {
     remove_all_char(r_str, '\t');
     remove_all_char(r_str, '\r');
@@ -380,8 +380,6 @@ std::string EpicsTempFileLexAnalysis::prep_r_str(std::string r_str)
     {
         f_str += r_str[i];
     }
-
-    return f_str;
 }
 
 void EpicsTempFileLexAnalysis::parse_dft(void)
