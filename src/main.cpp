@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     
     EpicsRecordChain y(q_state);
     y.print_adj_mat();
-    y.find_paths();
+    y.traverse(0, 0);
     
     //EpicsLatexGen gen("test", "test_files/sample2.db", q_state);
     return EXIT_SUCCESS;

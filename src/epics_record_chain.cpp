@@ -1,7 +1,7 @@
 #include <iostream>
 #include "epics_record_chain.hpp"
 
-size_t EpicsRecordChain::load_rec_vert(q_token &q_state)
+int EpicsRecordChain::load_rec_vert(q_token &q_state)
 {
     std::string rec_name;
     lex_states prev_state = INVALID;
@@ -44,6 +44,7 @@ size_t EpicsRecordChain::load_rec_vert(q_token &q_state)
             }
             else if (curr_state == TYPE)
             {
+                // Add compatibility for INP and OUT PP NPP flags
                 if (name == "FLNK" || name.substr(0, 3) == "LNK")
                     is_rec_link = true;
             }
@@ -102,11 +103,14 @@ static std::vector<std::vector<int>> init_adj_mat(int vert_num)
     return adj_mat;
 }
 
-static void traverse(std::vector<std::vector<int>> mat, int row, int col)
+void EpicsRecordChain::traverse(int row, int col)
 {
-    for (int i = 0; i < 5; i++)
+    for (auto const& pair : rec_vert)
     {
-
+        if (is_start_chain(adj_mat, pair.second))
+        {
+            std::cout << pair.first << " is a start chain record.\n";
+        }
     }
 }
 
@@ -162,7 +166,7 @@ EpicsRecordChain::EpicsRecordChain(void)
 
 EpicsRecordChain::EpicsRecordChain(q_token &q_state)
 {
-    size_t vert_num = load_rec_vert(q_state);
+    int vert_num = load_rec_vert(q_state);
     adj_mat = init_adj_mat(vert_num);
 
     for (const auto& r : rec_links)
@@ -186,14 +190,6 @@ EpicsRecordChain::EpicsRecordChain(q_token &q_state)
             }
 
             temp.pop();
-        }
-    }
-
-    for (auto const& pair : rec_vert)
-    {
-        if (is_start_chain(adj_mat, pair.second))
-        {
-            std::cout << pair.first << " is a start chain record.\n";
         }
     }
 };

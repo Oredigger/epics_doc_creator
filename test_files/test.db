@@ -1,4 +1,0 @@
-record(ai, "Hello")
-{
-    field(SCAN, "Passive")
-}
