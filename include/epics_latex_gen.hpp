@@ -102,9 +102,14 @@ class EpicsLatexGen
 {
     public:
         // Eventually transform db_fn into a queue of strings of database filepaths.
-        EpicsLatexGen(std::string tex_fn, std::string db_fn, q_token q_state);
+        EpicsLatexGen(std::string db_fn, q_token q_state);
+        
+        void save_as_file(std::string tex_fn);
     private:
         std::string latex;
+        EpicsLatexFileHeader   f_header;
+        EpicsLatexRecordHeader r_header;
+        EpicsLatexRecordBody   r_body;
 };
 
 

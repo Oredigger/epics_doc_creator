@@ -29,6 +29,8 @@ int main(int argc, char *argv[])
     y.print_adj_mat();
     y.traverse(0, 0);
     
-    EpicsLatexGen gen("test", "test_files/example.db", q_state);
+    EpicsLatexGen gen("test_files/example.db", q_state);
+    gen.save_as_file("test");
+    
     return EXIT_SUCCESS;
 }

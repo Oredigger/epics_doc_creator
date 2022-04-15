@@ -286,48 +286,42 @@ std::string EpicsLatexRecordBody::get_latex_str(void)
     return conv;
 }
 
-EpicsLatexGen::EpicsLatexGen(std::string tex_fn, std::string db_fn, q_token q_state)
+EpicsLatexGen::EpicsLatexGen(std::string db_fn, q_token q_state)
 {
     latex += DOC_HEADER + FILE_BEGIN;
     std::string h_str = gen_header_str(q_state);
     
-    EpicsLatexFileHeader f_header(h_str); 
+    f_header.load(h_str); 
     latex += f_header.get_latex_str();
     
     bool is_record = false;
-    EpicsLatexRecordHeader r_header;
-    EpicsLatexRecordBody r_body;
 
     while (!q_state.empty())
     {
         auto elem = q_state.front();
-
         lex_states state = std::get<0>(elem);
-        std::string name = std::get<1>(elem);
 
+        std::string name = std::get<1>(elem);
         trim_whitespace(name);
 
         if (state == HEADER && name == "record")
         {
             r_body.load(q_state);
             is_record = true;
-            
+
             continue;
         }
-
-        if (state == COMMENT)
+        else if (state == COMMENT)
         {
             if (name == "##")
             {
                 std::string r_str = gen_header_str(q_state);
                 r_header.load(r_str);
             }
-
-            if (name == "}")
+            else if (name == "}")
                 r_header.clear();
         }
-        
-        if (state == RIGHT_CURLY)
+        else if (state == RIGHT_CURLY)
         {
             if (is_record)
             {
@@ -336,6 +330,7 @@ EpicsLatexGen::EpicsLatexGen(std::string tex_fn, std::string db_fn, q_token q_st
 
                 size_t insert_idx = latex_r_body.find("}}") + 3;
                 latex_r_body.insert(insert_idx, latex_r_header);
+
                 latex += latex_r_body;
             }
 
@@ -349,9 +344,14 @@ EpicsLatexGen::EpicsLatexGen(std::string tex_fn, std::string db_fn, q_token q_st
     }
 
     latex += FILE_END;
+}
+
+void EpicsLatexGen::save_as_file(std::string tex_fn)
+{
     struct stat buf;
     
-    if (stat("./tex", &buf)) mkdir("./tex", 755);
+    if (stat("./tex", &buf)) 
+        mkdir("./tex", 755);
 
     std::ofstream fout;
     fout.open("./tex/" + tex_fn + ".tex", std::ofstream::out);
