@@ -205,6 +205,7 @@ void EpicsLatexRecordBody::load(q_token &q_state)
     while (!q_state.empty())
     {
         auto elem  = q_state.front();
+
         lex_states state = std::get<0>(elem);
         std::string name = std::get<1>(elem);
     

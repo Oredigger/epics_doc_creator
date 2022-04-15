@@ -1,0 +1,104 @@
+# devKeysight34461AMultimeter.template
+# Template database for the Keysight 34461A Multimeter
+# Mehmet Bozdogan 02/05/2018
+#
+# substitutions:
+# sys    - system
+# sec    - section
+# dev    - device
+# port   - sys:sec:dev device port
+#
+#
+################################################################################
+
+###
+# /file  example.db
+# /brief Hmm what the heck is going on
+###
+
+record(stringin, "sys:sec:dev:Dbg")
+{
+        field(DESC, "dev debug")
+        field(DTYP, "stream")
+        field(INP, "@devKeysight34461AMultimeter.proto debug sys:sec:dev")
+}
+
+record(stringin, "sys:sec:dev:Idn")
+{
+	field(DESC, "dev identification")
+	field(DTYP, "stream")
+	field(INP, "@devKeysight34461AMultimeter.proto getIdn sys:sec:dev")
+	field(PINI, "YES")
+}
+
+record(ai, "sys:sec:dev:Meas")
+{
+	field(DESC, "dev get measurement")
+	field(DTYP, "stream")
+	field(INP, "@devKeysight34461AMultimeter.proto meas sys:sec:dev")
+	field(SCAN, "1 second")
+}
+
+###
+# /brief what on earth
+###
+
+# Help me
+
+record(mbbo, "sys:sec:dev:Mode_SP")
+{
+	field(DESC, "dev mode SetPoint")
+	field(DTYP, "stream")
+    ###
+    # /param what on venus
+    ###
+	field(OUT,  "@devKeysight34461AMultimeter.proto setMode(sys:sec:dev) sys:sec:dev")
+	field(ZRVL, "0")
+	field(ZRST, "Voltage")
+	field(ONVL, "1")
+	field(ONST, "Current")
+}
+
+record(mbbi, "sys:sec:dev:Unit_RB")
+{
+	field(DESC, "dev Unit ReadBack")
+	field(D_TYP, "stream")
+	field(INP, "@devKeysight34461AMultimeter.proto getMode(sys:sec:dev) sys:sec:dev")
+	field(SCAN, "2 second")
+	field(ZRVL, "0")
+	field(ZRST, "V")
+	field(ONVL, "1")
+	field(ONST, "A")
+	field(FLNK, "sys:sec:dev:Meas_Unit_CL")
+}
+
+record(scalcout, "sys:sec:dev:Meas_Unit_CL") {
+    field(DESC, "Measurement Unit RB ClosedLoob")
+    field(INAA, "sys:sec:dev:Unit_RB")
+    field(CALC, "AA")
+    field(OUT, "sys:sec:dev:Meas.EGU")
+}
+
+record(bi, "sys:sec:dev:Elc_Flw_Type_RB")
+{
+	field(DESC, "dev electron flow type ReadBack")
+	field(ZNAM, "DC")
+	field(ONAM, "AC")
+}
+
+###
+# /brief beevis
+###
+
+record(bo, "sys:sec:dev:Elc_Flw_Type_SP")
+{
+    ###
+    # /param heh
+    ###
+
+	field(DESC, "dev electron flow type SetPoint")
+	field(DTYP, "stream")
+	field(OUT, "@devKeysight34461AMultimeter.proto setType(sys:sec:dev) sys:sec:dev")
+	field(ZNAM, "DC")
+	field(ONAM, "AC")
+}

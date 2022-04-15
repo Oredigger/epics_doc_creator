@@ -1,0 +1,35 @@
+\documentclass[12pt]{article}
+\begin{document}
+\section{ example.db }
+\textit{Hmm what the heck is going on}
+\newpage
+\subsection{sys:sec:dev:Dbg - \textit{stringin}}
+\subsubsection{Fields}
+DESC: dev debug\\\\ DTYP: stream\\\\ INP: devKeysight34461AMultimeter.proto debug sys:sec:dev\\\\ \newpage
+\subsection{sys:sec:dev:Idn - \textit{stringin}}
+\subsubsection{Fields}
+DESC: dev identification\\\\ DTYP: stream\\\\ INP: devKeysight34461AMultimeter.proto getIdn sys:sec:dev\\\\ PINI: YES\\\\ \newpage
+\subsection{sys:sec:dev:Meas - \textit{ai}}
+\subsubsection{Fields}
+DESC: dev get measurement\\\\ DTYP: stream\\\\ INP: devKeysight34461AMultimeter.proto meas sys:sec:dev\\\\ SCAN: 1 second\\\\ \newpage
+\subsection{sys:sec:dev:Mode\_ SP - \textit{mbbo}}
+\subsubsection{Brief}
+what on earth
+\subsubsection{Fields}
+DESC: dev mode SetPoint\\\\ DTYP: stream\\\\ ONST: Current\\\\ ONVL: 1\\\\ OUT: devKeysight34461AMultimeter.proto setMode(sys:sec:dev) sys:sec:dev\\\\ \textit{what on venus}\\\\ 
+ZRST: Voltage\\\\ ZRVL: 0\\\\ \newpage
+\subsection{sys:sec:dev:Unit\_ RB - \textit{mbbi}}
+\subsubsection{Fields}
+DESC: dev Unit ReadBack\\\\ D\_ TYP: stream\\\\ FLNK: sys:sec:dev:Meas\_ Unit\_ CL\\\\ INP: devKeysight34461AMultimeter.proto getMode(sys:sec:dev) sys:sec:dev\\\\ ONST: A\\\\ ONVL: 1\\\\ SCAN: 2 second\\\\ ZRST: V\\\\ ZRVL: 0\\\\ \newpage
+\subsection{sys:sec:dev:Meas\_ Unit\_ CL - \textit{scalcout}}
+\subsubsection{Fields}
+CALC: AA\\\\ DESC: Measurement Unit RB ClosedLoob\\\\ INAA: sys:sec:dev:Unit\_ RB\\\\ OUT: sys:sec:dev:Meas.EGU\\\\ \newpage
+\subsection{sys:sec:dev:Elc\_ Flw\_ Type\_ RB - \textit{bi}}
+\subsubsection{Fields}
+DESC: dev electron flow type ReadBack\\\\ ONAM: AC\\\\ ZNAM: DC\\\\ \newpage
+\subsection{sys:sec:dev:Elc\_ Flw\_ Type\_ SP - \textit{bo}}
+\subsubsection{Brief}
+beevis
+\subsubsection{Fields}
+DESC: dev electron flow type SetPoint\\\\ \textit{heh}\\\\ 
+DTYP: stream\\\\ ONAM: AC\\\\ OUT: devKeysight34461AMultimeter.proto setType(sys:sec:dev) sys:sec:dev\\\\ ZNAM: DC\\\\ \end{document}

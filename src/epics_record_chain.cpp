@@ -1,7 +1,7 @@
 #include <iostream>
 #include "epics_record_chain.hpp"
 
-int EpicsRecordChain::load_rec_vert(q_token &q_state)
+int EpicsRecordChain::load_rec_vert(q_token q_state)
 {
     std::string rec_name;
     lex_states prev_state = INVALID;
@@ -162,9 +162,9 @@ void EpicsRecordChain::print_adj_mat(void)
 }
 
 EpicsRecordChain::EpicsRecordChain(void)
-{};
+{}
 
-EpicsRecordChain::EpicsRecordChain(q_token &q_state)
+EpicsRecordChain::EpicsRecordChain(q_token q_state)
 {
     int vert_num = load_rec_vert(q_state);
     adj_mat = init_adj_mat(vert_num);
@@ -192,4 +192,4 @@ EpicsRecordChain::EpicsRecordChain(q_token &q_state)
             temp.pop();
         }
     }
-};
+}

@@ -10,9 +10,9 @@ class EpicsRecordChain
 {
     public:
         EpicsRecordChain(void);
-        EpicsRecordChain(q_token &q_state);
+        EpicsRecordChain(q_token q_state);
 
-        int  load_rec_vert(q_token &q_state);
+        int  load_rec_vert(q_token q_state);
         void traverse(int row, int col);
         void find_paths(void);
         void print_adj_mat(void);
@@ -31,7 +31,7 @@ class EpicsRecordChain
                 bool is_start_rec;
                 std::string name;
         };
-        
+
         std::map<std::string, int> rec_vert;
         std::map<std::string, std::queue<std::string>> rec_links;
         std::vector<std::vector<int>> adj_mat;

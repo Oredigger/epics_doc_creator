@@ -272,8 +272,7 @@ void EpicsDbFileLexAnalysis::parse_dft(void)
         {
             token += curr;
 
-            if (!isalpha(next) && !isdigit(next) 
-                && next != '_' && next != ':' && !is_raw)
+            if (!isalpha(next) && !isdigit(next) && next != '_' && next != ':' && !is_raw)
                 push_state_clear_token(q_state, curr_state, token, next, line_num);
         }
         else if (curr_state == TYPE)
