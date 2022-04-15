@@ -127,6 +127,8 @@ record (stringin, "Testaad:spy")
     field (DTYP, "stream")
     field (INP,  "@example.proto spy terminal")
     field (SCAN, "I/O Intr")
+    
+    
     field (FLNK, "Testaad:log5")
 }
 
@@ -137,7 +139,9 @@ record (stringin, "Testaad:log5")
 }
 
 record (stringin, "Testaad:log4")
-{field (INP,  "Testaad:log3")field (FLNK, "Testaad:log3")}))<record (stringin, "Testaad:laog3")
+{field (INP,  "Testaad:log3")field (FLNK, "Testaad:log3")}
+
+record (stringin, "Testaad:laog3")
 {
     field (INP,  "Testaad:log2")
     field (FLNK, "Testaad:log2")

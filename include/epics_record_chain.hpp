@@ -5,6 +5,16 @@
 #include <vector>
 #include "epics_lex_analysis.hpp"
 
+class EpicsRecordVertex
+{
+    public:
+        EpicsRecordVertex(void);
+    private:
+        int  vert_num;
+        bool is_mult_links;
+        bool is_start_rec;
+};
+
 class EpicsRecordChain
 {
     public:
@@ -17,7 +27,6 @@ class EpicsRecordChain
     private:
         std::map<std::string, int> rec_vert;
         std::map<std::string, std::queue<std::string>> rec_links;
-        std::map<std::string, std::vector<int>> rec_chain_paths;
         std::vector<std::vector<int>> adj_mat;
 };
 

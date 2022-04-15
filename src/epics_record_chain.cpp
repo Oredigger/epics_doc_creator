@@ -70,63 +70,49 @@ static bool is_all_zeros(std::vector<std::vector<int>> mat)
     {
         for (auto elem : row) 
         {
-            if (elem) return false;
+            if (elem) 
+                return false;
         }
     }
 
     return true;
 }
 
-static void trav_fwd(std::vector<int> chain, std::vector<std::vector<int>> &mat, int vertex_num)
+static bool is_start_chain(std::vector<std::vector<int>> mat, int vert_num)
 {
-    if (vertex_num > mat.size() - 1)
-        return;
-    
-    chain.push_back(vertex_num);
-    int i = 0;
-
-    for (i; i < adj_mat[vertex_num].size(); i++)
+    for (auto row : mat)
     {
-        if (adj_mat[vertex_num][i])
-        {
-            adj_mat[vertex_num][i] = 0;
-            break;
-        }
+        if (row[vert_num])
+            return false;
     }
 
-    trav_fwd(chain, mat, i);
+    return true;
 }
 
-static void trav_back(std::vector<int> chain, std::vector<std::vector<int>> &mat, int vertex_num)
+static std::vector<std::vector<int>> init_adj_mat(int vert_num)
 {
-    if (vertex_num < 0)
-        return;
-    
-    chain.push(vertex_num);
-    int i = 0
+    std::vector<int> one_d_vec(vert_num, 0);
+    std::vector<std::vector<int>> adj_mat;
 
-    for (i; i < adj_mat[vertex_num].size(); i++)
+    for (int i = 0; i < vert_num; i++)
     {
-        if (adj_mat[vertex_num][i])
-        {
-            adj_mat[vertex_num][i] = 0;
-            break;
-        }
+        adj_mat.push_back(one_d_vec);
     }
 
-    trav_back(chain, mat, i);
+    return adj_mat;
 }
 
+static void traverse(std::vector<std::vector<int>> mat, int row, int col)
+{
+    for (int i = 0; i < 5; i++)
+    {
+
+    }
+}
 
 void EpicsRecordChain::find_paths(void)
 {
-    if (adj_mat.empty())
-        return;
-
-    std::vector<std::vector<int>> ref_adj_mat = adj_mat;
-    int curr_chain_num = 1;
-
-    while (!is_all_zeros(ref_adj_mat))
+    /*while (!is_all_zeros(ref_adj_mat))
     {
         int i = 0, j = 0;
         bool quit_loop = false;
@@ -147,8 +133,8 @@ void EpicsRecordChain::find_paths(void)
         }
 
         // Look backwards
-        rec_chain_paths["CHAIN_" + std::to_string(curr_chain_num)];
-    }
+        rec_chain_paths["CHAIN_" + std::to_string(curr_chain_num++)];
+    }*/
 }
 
 void EpicsRecordChain::print_adj_mat(void)
@@ -177,12 +163,7 @@ EpicsRecordChain::EpicsRecordChain(void)
 EpicsRecordChain::EpicsRecordChain(q_token &q_state)
 {
     size_t vert_num = load_rec_vert(q_state);
-    std::vector<int> one_d_vec(vert_num, 0);
-
-    for (int i = 0; i < vert_num; i++)
-    {
-        adj_mat.push_back(one_d_vec);
-    }
+    adj_mat = init_adj_mat(vert_num);
 
     for (const auto& r : rec_links)
     {
@@ -191,7 +172,7 @@ EpicsRecordChain::EpicsRecordChain(q_token &q_state)
         if (rec_vert.find(start) == rec_vert.end())
             continue;
         
-        int vert_1 = rec_vert.at(start);
+        int v1 = rec_vert.at(start);
         std::queue<std::string> temp = r.second;
 
         while (!temp.empty())
@@ -200,11 +181,19 @@ EpicsRecordChain::EpicsRecordChain(q_token &q_state)
 
             if (rec_vert.find(dest) != rec_vert.end())
             {
-                int vert_2 = rec_vert.at(dest);
-                adj_mat[vert_1][vert_2] = 1;
+                int v2 = rec_vert.at(dest);
+                adj_mat[v1][v2] = 1;
             }
 
             temp.pop();
+        }
+    }
+
+    for (auto const& pair : rec_vert)
+    {
+        if (is_start_chain(adj_mat, pair.second))
+        {
+            std::cout << pair.first << " is a start chain record.\n";
         }
     }
 };

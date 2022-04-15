@@ -23,3 +23,10 @@ record(ai, "rec_7")
 {
     field(FLNK, "rec_3")
 }
+
+record(ai, "rec_8")
+{
+    field(FLNK, "rec_7")
+}
+
+record(ai, "rec_9")
