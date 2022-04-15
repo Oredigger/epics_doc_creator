@@ -340,24 +340,12 @@ void EpicsDbFileLexAnalysis::parse_dft(void)
             is_equation = true;
             ch_state(q_state, curr_state, next, curr, line_num);
         }
-        else if (curr_state == POUND)
+        else if (curr_state == POUND || curr_state == PERCENT)
         {
             is_raw = true;        
             ch_state(q_state, curr_state, next, curr, line_num);
         }
-        else if (curr_state == COMMENT)
-        {
-            token += curr;
-
-            if (next == '\n')
-                push_state_clear_token(q_state, curr_state, token, next, line_num);
-        }
-        else if (curr_state == PERCENT)
-        {
-            is_raw = true;        
-            ch_state(q_state, curr_state, next, curr, line_num);
-        }
-        else if (curr_state == C_CODE)
+        else if (curr_state == COMMENT || curr_state == C_CODE)
         {
             token += curr;
 
