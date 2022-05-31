@@ -1,5 +1,8 @@
-#include <iostream>
+#include <boost/graph/adjacency_matrix.hpp>
+#include <boost/graph/graph_utility.hpp>
+#include <boost/graph/graphviz.hpp>
 #include "epics_record_chain.hpp"
+#include <iostream>
 
 int EpicsRecordChain::load_rec_vert(q_token q_state)
 {
@@ -24,9 +27,10 @@ int EpicsRecordChain::load_rec_vert(q_token q_state)
         else if (in_rec_header)
         {
             if (curr_state == VALUE)
+            {
                 rec_name = name;
-
-            if (curr_state == RIGHT_PAREN)
+            }
+            else if (curr_state == RIGHT_PAREN)
             {
                 rec_vert[rec_name] = vert_num++;
                 in_rec_header = false;
@@ -45,8 +49,15 @@ int EpicsRecordChain::load_rec_vert(q_token q_state)
             else if (curr_state == TYPE)
             {
                 // Add compatibility for INP and OUT PP NPP flags
-                if (name == "FLNK" || name.substr(0, 3) == "LNK")
+                if (name == "FLNK")
+                {
                     is_rec_link = true;
+                }
+                else if (name.substr(0, 3) == "LNK")
+                {
+                    std::cout << "I love you\n";
+                    is_rec_link = true;
+                }
             }
             else if (curr_state == VALUE)
             {
@@ -71,20 +82,8 @@ static bool is_all_zeros(std::vector<std::vector<int>> mat)
     {
         for (auto elem : row) 
         {
-            if (elem) 
-                return false;
+            if (elem) return false;
         }
-    }
-
-    return true;
-}
-
-static bool is_start_chain(std::vector<std::vector<int>> mat, int vert_num)
-{
-    for (auto row : mat)
-    {
-        if (row[vert_num])
-            return false;
     }
 
     return true;
@@ -103,42 +102,17 @@ static std::vector<std::vector<int>> init_adj_mat(int vert_num)
     return adj_mat;
 }
 
-void EpicsRecordChain::traverse(int row, int col)
+bool EpicsRecordChain::is_start_chain(std::string vert_name)
 {
-    for (auto const& pair : rec_vert)
+    int vert_num = rec_vert[vert_name];
+
+    for (auto row : adj_mat)
     {
-        if (is_start_chain(adj_mat, pair.second))
-        {
-            std::cout << pair.first << " is a start chain record.\n";
-        }
+        if (row[vert_num])
+            return false;
     }
-}
 
-void EpicsRecordChain::find_paths(void)
-{
-    /*while (!is_all_zeros(ref_adj_mat))
-    {
-        int i = 0, j = 0;
-        bool quit_loop = false;
-
-        for (i = 0; i < adj_mat.size(); i++)
-        {
-            if (quit_loop)
-                break;
-
-            for (j = 0; j < adj_mat[i].size(); j++)
-            {
-                if (adj_mat[i][j])
-                {
-                    quit_loop = true;
-                    break;
-                }
-            }
-        }
-
-        // Look backwards
-        rec_chain_paths["CHAIN_" + std::to_string(curr_chain_num++)];
-    }*/
+    return true;
 }
 
 void EpicsRecordChain::print_adj_mat(void)
@@ -161,13 +135,40 @@ void EpicsRecordChain::print_adj_mat(void)
     }
 }
 
+void EpicsRecordChain::create_visual_graph(std::string fn)
+{
+    std::ofstream fout(fn);
+
+    if (fout.good())
+    {
+        fout << "digraph G {\n";
+
+        for (auto it = rec_vert.begin(); it != rec_vert.end(); it++)
+        {
+            fout << it->second << "[label=" << it->first << "];\n";
+        }
+
+        for (int i = 0; i < adj_mat.size(); i++) 
+        {
+            for (int j = 0; j < adj_mat[i].size(); j++) 
+            {
+                if (adj_mat[i][j])
+                    fout << i << "->" << j << " ;\n";
+            }
+        }
+        
+        fout << "}\n";
+        fout.close();
+    }
+}
+
 EpicsRecordChain::EpicsRecordChain(void)
 {}
 
 EpicsRecordChain::EpicsRecordChain(q_token q_state)
 {
-    int vert_num = load_rec_vert(q_state);
-    adj_mat = init_adj_mat(vert_num);
+    n = load_rec_vert(q_state);
+    adj_mat = init_adj_mat(n);
 
     for (const auto& r : rec_links)
     {

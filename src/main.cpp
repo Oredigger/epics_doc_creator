@@ -12,14 +12,15 @@
 
 // The command argument will look like the following
 // ./main --files test_files/sample7.db test_files/sample1.db --subs test_files/x.sub
-//
+
+// Function for removing large comment blocks
 
 int main(int argc, char *argv[])
 { 
     //if (argc <= 1)
     //    return EXIT_FAILURE;
 
-    EpicsDbFileLexAnalysis x("test_files/example.db");
+    EpicsDbFileLexAnalysis x("test_files/example2.db");
     x.parse_dft();
 
     q_token q_state = x.get_q_state();
@@ -27,10 +28,11 @@ int main(int argc, char *argv[])
     
     EpicsRecordChain y(q_state);
     y.print_adj_mat();
-    y.traverse(0, 0);
+    y.create_visual_graph("hmm.dot");
+    //y.traverse(0, 0);
     
-    EpicsLatexGen gen("test_files/example.db", q_state);
-    gen.save_as_file("test");
-    
+    //EpicsLatexGen gen("test_files/example.db", q_state);
+    //gen.save_as_file("test");
+
     return EXIT_SUCCESS;
 }

@@ -62,7 +62,7 @@ record(mbbo, "sys:sec:dev:Mode_SP")
 record(mbbi, "sys:sec:dev:Unit_RB")
 {
 	field(DESC, "dev Unit ReadBack")
-	field(D_TYP, "stream")
+	field(DTYP, "stream")
 	field(INP, "@devKeysight34461AMultimeter.proto getMode(sys:sec:dev) sys:sec:dev")
 	field(SCAN, "2 second")
 	field(ZRVL, "0")
@@ -79,12 +79,13 @@ record(scalcout, "sys:sec:dev:Meas_Unit_CL") {
     field(OUT, "sys:sec:dev:Meas.EGU")
 }
 
-record(bi, "sys:sec:dev:Elc_Flw_Type_RB")
+#{record(bi, "sys:sec:dev:Elc_Flw_Type_RB")
 {
+	a   a
 	field(DESC, "dev electron flow type ReadBack")
 	field(ZNAM, "DC")
 	field(ONAM, "AC")
-}
+}#}
 
 ###
 # /brief beevis

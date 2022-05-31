@@ -24,3 +24,4 @@ $(OBJDIR):
 
 clean:
 	rm -rf $(OBJDIR)
+	rm -rf main

@@ -147,8 +147,7 @@ static std::string state_2_str(lex_states state)
     }
 }
 
-EpicsLexAnalysis::EpicsLexAnalysis(void)
-{}
+EpicsLexAnalysis::EpicsLexAnalysis(void){}
 
 EpicsLexAnalysis::EpicsLexAnalysis(std::string fn)
 {
@@ -209,12 +208,12 @@ void EpicsDbFileLexAnalysis::prep_r_str(void)
     size_t q_idx_0 = 0, q_idx_1 = 0;
 
     // Not the most optimal solution - however this prevents memory leaks and unconditional branching from 
-    // occurring though!
+    // occurring!
     for (size_t i = 0; i < r_str.length(); i++)
     {
         if (r_str[i] == '#')
             is_comment = true;
-        if (r_str[i] == '\n')
+        else if (r_str[i] == '\n')
             is_comment = false;
     
         if (i == q_idx_1)
@@ -237,7 +236,7 @@ void EpicsDbFileLexAnalysis::prep_r_str(void)
         {
             bool bounds_flag = (i <= q_idx_0 || i >= q_idx_1);
 
-            if ((bounds_flag && r_str[i] != ' ') || !bounds_flag)
+            if (r_str[i] != ' ' || !bounds_flag)
                 f_str += r_str[i];
         }
         else
@@ -311,8 +310,7 @@ void EpicsDbFileLexAnalysis::parse_dft(void)
         {
             if (!is_equation)
                 ch_state(q_state, curr_state, next, curr, line_num);
-            
-            if (is_equation && curr_state != VALUE)
+            else if (is_equation && curr_state != VALUE)
                 curr_state = VALUE;
         }
         else if (curr_state == COMMA)
@@ -369,5 +367,4 @@ void EpicsTempFileLexAnalysis::prep_r_str(void)
     }
 }
 
-void EpicsTempFileLexAnalysis::parse_dft(void)
-{}
+void EpicsTempFileLexAnalysis::parse_dft(void){}

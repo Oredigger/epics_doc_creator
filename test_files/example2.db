@@ -1,0 +1,32 @@
+record(ai, "rec_1")
+{
+    field(FLNK, "rec_2")
+}
+
+record(ai, "rec_2")
+{
+    field(FLNK, "rec_3")
+}
+
+record(ai, "rec_3")
+{
+    field(FLNK, "rec_4")
+}
+
+record(ai, "rec_4")
+{
+    field(           FLNK , "rec_2")
+}
+
+record(ao, "rec_5")
+record(ao, "rec_6")
+
+# These should not be valid
+
+rec  ord(fan              out, "rec_7")
+{
+    field(LNK0, "rec_1")
+    field(   LNK   
+    1, "rec_2")
+    field(LNK   2, "rec_3")
+}
