@@ -16,6 +16,7 @@ class EpicsRecordChain
         EpicsRecordChain(q_token q_state);
 
         int  load_rec_vert(q_token q_state);
+        std::vector<std::vector<int>> init_adj_mat(int vert_num);
         bool is_start_chain(std::string vert_name);
         void create_visual_graph(std::string fn);
         void print_adj_mat(void);

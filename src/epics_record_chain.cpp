@@ -25,18 +25,18 @@ int EpicsRecordChain::load_rec_vert(q_token q_state)
         }
         else if (in_rec_header)
         {
-            if (curr_state == VALUE)
+            switch (curr_state)
             {
-                rec_name = name;
-            }
-            else if (curr_state == TYPE)
-            {
-                rec_type = name;
-            }
-            else if (curr_state == RIGHT_PAREN)
-            {
-                rec_vert[rec_name] = vert_num++;
-                in_rec_header = false;
+                case VALUE:
+                    rec_name = name;
+                    break;
+                case TYPE:
+                    rec_type = name;
+                    break;
+                case RIGHT_PAREN:
+                    rec_vert[rec_name] = vert_num++;
+                    in_rec_header = false;
+                    break;
             }
         }
         else if (curr_state == LEFT_CURLY)
@@ -114,20 +114,7 @@ int EpicsRecordChain::load_rec_vert(q_token q_state)
     return vert_num;
 }
 
-static bool is_all_zeros(std::vector<std::vector<int>> mat)
-{
-    for (auto row : mat) 
-    {
-        for (auto elem : row) 
-        {
-            if (elem) return false;
-        }
-    }
-
-    return true;
-}
-
-static std::vector<std::vector<int>> init_adj_mat(int vert_num)
+std::vector<std::vector<int>> EpicsRecordChain::init_adj_mat(int vert_num)
 {
     std::vector<int> one_d_vec(vert_num, 0);
     std::vector<std::vector<int>> adj_mat;
@@ -186,6 +173,9 @@ void EpicsRecordChain::create_visual_graph(std::string fn)
         {
             std::string shape_name = it->first;
             std::string rec_type = rec_types[shape_name];
+
+            if (rec_type.empty())
+                rec_type = "OUTSIDE_DB";
 
             if (shape_name.length() > NEWLINE_SHAPE)
             {
