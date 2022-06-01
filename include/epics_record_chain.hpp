@@ -1,10 +1,13 @@
 #ifndef EPICS_RECORD_CHAIN_H
 #define EPICS_RECORD_CHAIN_H
 
+#include "epics_lex_analysis.hpp"
 #include <map>
 #include <string>
+#include <tuple>
 #include <vector>
-#include "epics_lex_analysis.hpp"
+
+enum Link_Type {NO_LINK, FLNK, OUT, INP};
 
 class EpicsRecordChain
 {
@@ -19,7 +22,8 @@ class EpicsRecordChain
     private:
         int n;
         std::map<std::string, int> rec_vert;
-        std::map<std::string, std::queue<std::string>> rec_links;
+        std::map<std::string, std::string> rec_types;
+        std::map<std::string, std::queue<std::tuple<std::string, Link_Type>>> rec_links;
         std::vector<std::vector<int>> adj_mat;
 };
 

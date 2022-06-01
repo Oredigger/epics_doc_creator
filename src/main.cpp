@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
     //if (argc <= 1)
     //    return EXIT_FAILURE;
 
-    EpicsDbFileLexAnalysis x("test_files/example2.db");
+    EpicsDbFileLexAnalysis x("test_files/example3.db");
     x.parse_dft();
 
     q_token q_state = x.get_q_state();

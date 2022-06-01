@@ -253,7 +253,8 @@ void EpicsDbFileLexAnalysis::parse_dft(void)
     lex_states curr_state = HEADER;
     prep_r_str();
 
-    if (!f_str.length()) return;
+    if (!f_str.length()) 
+        return;
 
     if (!isalpha(f_str[0]) && !isdigit(f_str[0]) && f_str[0] != '_')   
         next_state(curr_state, f_str[0]);

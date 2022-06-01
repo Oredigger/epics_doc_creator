@@ -6,10 +6,10 @@
 
 int EpicsRecordChain::load_rec_vert(q_token q_state)
 {
-    std::string rec_name;
-    lex_states prev_state = INVALID;
+    std::string rec_name, rec_type;
+    Link_Type lt = NO_LINK;
 
-    bool in_rec_header = false, in_rec_body = false, is_rec_link = false;
+    bool in_rec_header = false, in_rec_body = false;
     int  vert_num = 0;
 
     while (!q_state.empty())
@@ -21,7 +21,6 @@ int EpicsRecordChain::load_rec_vert(q_token q_state)
 
         if (curr_state == HEADER && name == "record")
         {
-            rec_name.clear();
             in_rec_header = true;
         }
         else if (in_rec_header)
@@ -29,6 +28,10 @@ int EpicsRecordChain::load_rec_vert(q_token q_state)
             if (curr_state == VALUE)
             {
                 rec_name = name;
+            }
+            else if (curr_state == TYPE)
+            {
+                rec_type = name;
             }
             else if (curr_state == RIGHT_PAREN)
             {
@@ -45,32 +48,67 @@ int EpicsRecordChain::load_rec_vert(q_token q_state)
             if (curr_state == RIGHT_CURLY)
             {
                 in_rec_body = false;
+                rec_types[rec_name] = rec_type;
             }
             else if (curr_state == TYPE)
             {
-                // Add compatibility for INP and OUT PP NPP flags
                 if (name == "FLNK")
-                {
-                    is_rec_link = true;
-                }
-                else if (name.substr(0, 3) == "LNK")
-                {
-                    std::cout << "I love you\n";
-                    is_rec_link = true;
-                }
+                    lt = FLNK;
+                else if (name.substr(0, 3) == "LNK" || name.substr(0, 3) == "OUT")
+                    lt = OUT;
+                else if (name.substr(0, 3) == "INP" || name.substr(0, 3) == "DOL")
+                    lt = INP;
+                else
+                    lt = NO_LINK;
             }
             else if (curr_state == VALUE)
             {
-                if (is_rec_link)
+                if (lt != NO_LINK)
                 {
-                    rec_links[rec_name].push(name);
-                    is_rec_link = false;
+                    if (rec_type == "fanout" || lt == FLNK)
+                    {
+                        rec_links[rec_name].push(std::make_tuple(name, FLNK));
+
+                        if (rec_vert.find(name) == rec_vert.end())
+                            rec_vert[name] = vert_num++;
+                    }
+                    else
+                    {
+                        std::string delim = " ";
+                        std::string token, name_copy;
+
+                        bool is_pp = false;
+                        size_t pos = 0, i = 0;
+                        
+                        while ((pos = name.find(delim)) != std::string::npos) 
+                        {
+                            token = name.substr(0, pos);
+                            name.erase(0, pos + delim.length());
+
+                            if (i++ == 0)
+                                name_copy = token;
+
+                            if (token == "PP")
+                            {
+                                is_pp = true;
+                                break;
+                            }
+                        }
+                        
+                        if (is_pp || name.substr(0, 2) == "PP")
+                        {
+                            rec_links[rec_name].push(std::make_tuple(name_copy, lt));
+                            lt = NO_LINK;
+
+                            if (rec_vert.find(name_copy) == rec_vert.end())
+                                rec_vert[name_copy] = vert_num++;
+                        }
+                    }      
                 }
             }
         }
 
         q_state.pop();
-        prev_state = curr_state;
     }
 
     return vert_num;
@@ -138,25 +176,46 @@ void EpicsRecordChain::print_adj_mat(void)
 void EpicsRecordChain::create_visual_graph(std::string fn)
 {
     std::ofstream fout(fn);
+    const size_t NEWLINE_SHAPE = 16;
 
     if (fout.good())
     {
-        fout << "digraph G {\n";
+        fout << "digraph G {\nrankdir=LR;\n";
 
         for (auto it = rec_vert.begin(); it != rec_vert.end(); it++)
         {
-            fout << it->second << "[label=" << it->first << "];\n";
+            std::string shape_name = it->first;
+            std::string rec_type = rec_types[shape_name];
+
+            if (shape_name.length() > NEWLINE_SHAPE)
+            {
+                shape_name.insert(NEWLINE_SHAPE, 1, '\\');
+                shape_name.insert(NEWLINE_SHAPE + 1, 1, 'n');
+            }
+
+            fout << it->second << "[label=\"" << rec_type << "\n" << shape_name << "\" shape=box];\n";
         }
 
-        for (int i = 0; i < adj_mat.size(); i++) 
+        int i = 0;
+
+        for (i = 0; i < adj_mat.size(); i++) 
         {
             for (int j = 0; j < adj_mat[i].size(); j++) 
             {
                 if (adj_mat[i][j])
-                    fout << i << "->" << j << " ;\n";
+                {
+                    fout << i << "->" << j;
+
+                    if (adj_mat[i][j] == OUT)
+                        fout << "[ style=dotted color=red label=PP ]";
+                    else if (adj_mat[i][j] == INP)
+                        fout << "[ style=dotted color=blue label=PP ]";
+
+                    fout << ";\n";
+                }
             }
         }
-        
+
         fout << "}\n";
         fout.close();
     }
@@ -178,16 +237,17 @@ EpicsRecordChain::EpicsRecordChain(q_token q_state)
             continue;
         
         int v1 = rec_vert.at(start);
-        std::queue<std::string> temp = r.second;
+        std::queue<std::tuple<std::string, Link_Type>> temp = r.second;
 
         while (!temp.empty())
         {
-            std::string dest = temp.front();
+            std::string rec_dest_name = std::get<0>(temp.front());
+            Link_Type lt = std::get<1>(temp.front());
 
-            if (rec_vert.find(dest) != rec_vert.end())
+            if (rec_vert.find(rec_dest_name) != rec_vert.end())
             {
-                int v2 = rec_vert.at(dest);
-                adj_mat[v1][v2] = 1;
+                int v2 = rec_vert.at(rec_dest_name);
+                adj_mat[v1][v2] = lt;
             }
 
             temp.pop();
