@@ -166,6 +166,11 @@ record(fanout, "CLRU08:DIAG:DPG:BULK_LOAD_GROUP_1_8")
 	field(TSEL, "SSPP:SHOTID:DATA:ACTIVE_DATE.TIME")
 }
 
+record(calc, "hmm")
+{
+	field(CALC, "54e-6 / 6 * 5 + 1")
+}
+
 record(fanout, "CLRU08:DIAG:DPG:BULK_LOAD_GROUP_9_16")
 {
 	field(SCAN, "Passive")

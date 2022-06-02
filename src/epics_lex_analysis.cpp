@@ -149,72 +149,20 @@ static std::string state_2_str(lex_states state)
 
 EpicsLexAnalysis::EpicsLexAnalysis(void){}
 
-EpicsLexAnalysis::EpicsLexAnalysis(std::string fn)
-{
-    if (!q_state.empty())
-    {
-        q_token empty;
-        q_state.swap(empty);
-    }
-
-    std::ifstream fin;
-    fin.open(fn, std::ifstream::in);
-
-    if (fin.good())
-    {
-        std::ostringstream os;
-
-        if (os.good())
-        {
-            os << fin.rdbuf() << std::endl;
-            r_str = os.str();
-        }
-    }
-
-    fin.close();
-}
-
-q_token EpicsLexAnalysis::get_q_state(void)
-{
-    return q_state;
-}
-
-void EpicsLexAnalysis::print_q_state(void)
-{
-    while (!q_state.empty())
-    {
-        auto elem = q_state.front();
-        std::string token = (std::get<0>(elem) == NEWLINE) ? 
-                            "\\n" : std::get<1>(elem);
-
-        std::cout << state_2_str(std::get<0>(elem)) << "  " << token << "  " << std::get<2>(elem) << std::endl;
-        
-        if (std::get<0>(elem) == NEWLINE)
-            std::cout << "\n";
-
-        q_state.pop();
-    }
-}
-
-void EpicsDbFileLexAnalysis::prep_r_str(void)
+void EpicsLexAnalysis::prep_r_str(void)
 {
     remove_all_char(r_str, '\t');
     remove_all_char(r_str, '\r');
 
-    // Do not remove spaces in substrings that are surrounded by quotes.
     std::queue<size_t> q_quote_loc = get_all_char_pos(r_str, '"');
     
     bool is_comment = false;
     size_t q_idx_0 = 0, q_idx_1 = 0;
 
-    // Not the most optimal solution - however this prevents memory leaks and unconditional branching from 
-    // occurring!
     for (size_t i = 0; i < r_str.length(); i++)
     {
-        if (r_str[i] == '#')
-            is_comment = true;
-        else if (r_str[i] == '\n')
-            is_comment = false;
+        if (r_str[i] == '#') is_comment = true;
+        else if (r_str[i] == '\n') is_comment = false;
     
         if (i == q_idx_1)
         {
@@ -248,21 +196,67 @@ void EpicsDbFileLexAnalysis::prep_r_str(void)
     f_str += ' ';
 }
 
+EpicsLexAnalysis::EpicsLexAnalysis(std::string fn)
+{
+    if (!q_state.empty())
+    {
+        q_token empty;
+        q_state.swap(empty);
+    }
+
+    std::ifstream fin;
+    fin.open(fn, std::ifstream::in);
+
+    if (fin.good())
+    {
+        std::ostringstream os;
+
+        if (os.good())
+        {
+            os << fin.rdbuf() << std::endl;
+            r_str = os.str();
+        }
+    }
+
+    prep_r_str();
+    fin.close();
+}
+
+q_token EpicsLexAnalysis::get_q_state(void)
+{
+    return q_state;
+}
+
+void EpicsLexAnalysis::print_q_state(void)
+{
+    while (!q_state.empty())
+    {
+        auto elem = q_state.front();
+        std::string token = (std::get<0>(elem) == NEWLINE) ? 
+                            "\\n" : std::get<1>(elem);
+
+        std::cout << state_2_str(std::get<0>(elem)) << "  " << token << "  " << std::get<2>(elem) << std::endl;
+        
+        if (std::get<0>(elem) == NEWLINE)
+            std::cout << "\n";
+
+        q_state.pop();
+    }
+}
+
 void EpicsDbFileLexAnalysis::parse_dft(void)
 {
-    lex_states curr_state = HEADER;
-    prep_r_str();
-
     if (!f_str.length()) 
         return;
+
+    lex_states curr_state = HEADER;
 
     if (!isalpha(f_str[0]) && !isdigit(f_str[0]) && f_str[0] != '_')   
         next_state(curr_state, f_str[0]);
 
-    std::string token;
-
     bool is_equation = false, is_raw = false;
     size_t line_num = 1;
+    std::string token;
 
     for (size_t i = 0; i < f_str.length() - 1; i++)
     {
@@ -300,19 +294,17 @@ void EpicsDbFileLexAnalysis::parse_dft(void)
             }
             else
             {
-                if (!isalpha(next) && !isdigit(next) 
-                    && next != '-' && next != '_' && next != '.' 
-                    && next != 'e' && next != 'E' && !is_raw)
+                if (!isalpha(next) && !isdigit(next) && !is_raw
+                    && next != '-' && next != '_' && next != '.' && next != 'e' && next != 'E')
                     push_state_clear_token(q_state, curr_state, token, next, line_num);
             }
         }
-        else if (curr_state == LEFT_PAREN || curr_state == RIGHT_PAREN 
-                    || curr_state == LEFT_CURLY || curr_state == RIGHT_CURLY)
+        else if (curr_state == LEFT_PAREN || curr_state == RIGHT_PAREN || curr_state == LEFT_CURLY || curr_state == RIGHT_CURLY)
         {
             if (!is_equation)
                 ch_state(q_state, curr_state, next, curr, line_num);
-            else if (is_equation && curr_state != VALUE)
-                curr_state = VALUE;
+            
+            curr_state = (is_equation && curr_state != VALUE) ? VALUE : curr_state;
         }
         else if (curr_state == COMMA)
         {
@@ -321,9 +313,7 @@ void EpicsDbFileLexAnalysis::parse_dft(void)
         else if (curr_state == DOUBLE_QUOTE)
         {
             ch_state(q_state, curr_state, next, curr, line_num);
-
-            if (is_equation && curr_state != VALUE)
-                curr_state = VALUE;
+            curr_state = (is_equation && curr_state != VALUE) ? VALUE : curr_state;
         }
         else if (curr_state == NEWLINE)
         {
@@ -356,16 +346,3 @@ void EpicsDbFileLexAnalysis::parse_dft(void)
         }
     }
 }
-
-void EpicsTempFileLexAnalysis::prep_r_str(void)
-{
-    remove_all_char(r_str, '\t');
-    remove_all_char(r_str, '\r');
-
-    for (size_t i = 0; i < r_str.length(); i++)
-    {
-        f_str += r_str[i];
-    }
-}
-
-void EpicsTempFileLexAnalysis::parse_dft(void){}

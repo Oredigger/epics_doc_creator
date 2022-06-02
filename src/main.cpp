@@ -17,8 +17,38 @@
 
 int main(int argc, char *argv[])
 { 
-    //if (argc <= 1)
-    //    return EXIT_FAILURE;
+    if (argc <= 1)
+        return EXIT_FAILURE;
+
+    bool is_input = false, is_output = false;
+    std::vector<std::string> input_name;
+    std::string output_name;
+
+    for (int i = 1; i < argc; i++)
+    {
+        if (is_output)
+        {
+            output_name = argv[i];
+        }
+        else if (is_input)
+        {
+            std::string str(argv[i]);
+            input_name.push_back(str);
+        }
+        else
+        {
+            if (argv[i] == "--input")
+            {
+                is_input = true;
+                is_output = false;
+            }
+            else if (argv[i] == "--output")
+            {
+                is_input = false;
+                is_output = true;
+            }
+        }
+    }
 
     EpicsDbFileLexAnalysis x("test_files/example3.db");
     x.parse_dft();

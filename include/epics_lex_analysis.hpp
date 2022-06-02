@@ -34,6 +34,7 @@ class EpicsLexAnalysis
         EpicsLexAnalysis(void);
 
         q_token get_q_state(void);
+        void prep_r_str(void);
         void print_q_state(void);
         virtual void parse_dft(void) = 0;
         
@@ -52,16 +53,5 @@ class EpicsDbFileLexAnalysis : public EpicsLexAnalysis
     private:
         void prep_r_str(void);
 };
-
-class EpicsTempFileLexAnalysis : public EpicsLexAnalysis
-{
-    public:
-        EpicsTempFileLexAnalysis(std::string fn) : EpicsLexAnalysis(fn){};
-        EpicsTempFileLexAnalysis(void) : EpicsLexAnalysis(){};
-        void parse_dft(void);
-    private:
-        void prep_r_str(void);
-};
-
 
 #endif
