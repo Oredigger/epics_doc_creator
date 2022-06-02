@@ -11,44 +11,40 @@
 #include "epics_record_chain.hpp"
 
 // The command argument will look like the following
-// ./main --files test_files/sample7.db test_files/sample1.db --subs test_files/x.sub
-
-// Function for removing large comment blocks
+// ./main --input test_files/sample7.db test_files/sample1.db --output test_files/x.sub
 
 int main(int argc, char *argv[])
 { 
-    if (argc <= 1)
+    /*if (argc <= 1)
         return EXIT_FAILURE;
 
-    bool is_input = false, is_output = false;
-    std::vector<std::string> input_name;
+    // If read_files is set to be a 1, then read in the input files.
+    // If read_files is set to be a 2, then read in the output file.
+    // Otherwise, do nothing.
+
+    char read_files = 0;
+    std::queue<std::string> input_names;
     std::string output_name;
 
     for (int i = 1; i < argc; i++)
     {
-        if (is_output)
-        {
-            output_name = argv[i];
-        }
-        else if (is_input)
-        {
-            std::string str(argv[i]);
-            input_name.push_back(str);
-        }
+        if (strcmp(argv[i], "--input") == 0)
+            read_files = 1;
+        else if (strcmp(argv[i], "--output") == 0)
+            read_files = 2;
         else
         {
-            if (argv[i] == "--input")
-            {
-                is_input = true;
-                is_output = false;
-            }
-            else if (argv[i] == "--output")
-            {
-                is_input = false;
-                is_output = true;
-            }
+            if (read_files == 1)
+                input_names.push(argv[i]);
+            else if (read_files == 2)
+                output_name = argv[i];
         }
     }
+
+    while (!input_names.empty())
+    {
+        
+    }*/
 
     EpicsDbFileLexAnalysis x("test_files/example3.db");
     x.parse_dft();
@@ -59,7 +55,6 @@ int main(int argc, char *argv[])
     EpicsRecordChain y(q_state);
     y.print_adj_mat();
     y.create_visual_graph("hmm.dot");
-    //y.traverse(0, 0);
     
     //EpicsLatexGen gen("test_files/example.db", q_state);
     //gen.save_as_file("test");

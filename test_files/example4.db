@@ -1,0 +1,78 @@
+record(stringin, "PID") {
+    field(SDIS, "PRUN")
+    field(DISV, "0") # disable while Paused
+    field(DTYP, "stream")
+    field(INP , "@hp3458a.proto idn 1")
+    field(SCAN, "10 second")
+    field(FLNK, "PERR")
+    field(TPRO, "1")
+}
+
+record(longin, "PERR") {
+    field(DTYP, "stream")
+    field(INP , "@hp3458a.proto err 1")
+    field(FLNK, "PERRMSG")
+    field(TPRO, "1")
+}
+
+record(stringin, "PERRMSG") {
+    field(DTYP, "stream")
+    field(INP , "@hp3458a.proto errstr 1")
+    field(TPRO, "1")
+}
+
+record(bo, "PRUN") {
+    field(ZNAM, "Pause")
+    field(ONAM, "Sample")
+    field(FLNK, "PRUN_")
+    field(TPRO, "1")
+}
+
+record(fanout, "PRUN_") {
+    field(LNK1, "PDIS_")
+    field(LNK2, "PENA_")
+    field(TPRO, "1")
+}
+
+record(bo, "PENA_") {
+    field(SDIS, "PRUN")
+    field(DISV, "0") # disable while Paused
+    field(DTYP, "stream")
+    field(OUT , "@hp3458a.proto setup 1")
+    field(TPRO, "1")
+    field(FLNK, "PI.PROC CA") # start first measurement
+}
+
+record(bo, "PDIS_") {
+    field(SDIS, "PRUN")
+    field(DISV, "1") # disable while Sampling
+    field(DTYP, "stream")
+    field(OUT , "@hp3458a.proto detach 1")
+    field(TPRO, "1")
+}
+
+
+record(ai, "PI") {
+    field(SDIS, "PRUN NPP")
+    field(DISV, "0") # disable while Paused
+    field(DTYP, "stream")
+    field(INP , "@hp3458a.proto sample 1")
+    field(EGU , "A")
+    field(PREC, "9")
+    field(FLNK, "PCNT")
+    field(TPRO, "1")
+}
+
+record(calc, "PCNT") {
+    field(CALC, "VAL+1")
+    field(FLNK, "PI.PROC CA") # loop back
+}
+
+record(calc, "PRATE") {
+    field(DESC, "Update rate")
+    field(INPA, "PCNT NPP")
+    field(CALC, "C:=A-B;B:=A;C/10")
+    field(SCAN, "10 second")
+    field(EGU , "Hz")
+    field(PREC, "1")
+}

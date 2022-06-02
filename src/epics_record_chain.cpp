@@ -33,6 +33,7 @@ int EpicsRecordChain::load_rec_vert(q_token q_state)
                     break;
                 case RIGHT_PAREN:
                     rec_vert[rec_name] = vert_num++;
+                    rec_types[rec_name] = rec_type;
                     in_rec_header = false;
                     break;
             }
@@ -46,7 +47,6 @@ int EpicsRecordChain::load_rec_vert(q_token q_state)
             if (curr_state == RIGHT_CURLY)
             {
                 in_rec_body = false;
-                rec_types[rec_name] = rec_type;
             }
             else if (curr_state == TYPE)
             {
@@ -65,7 +65,7 @@ int EpicsRecordChain::load_rec_vert(q_token q_state)
                 {
                     if (rec_type == "fanout" || lt == FLNK)
                     {
-                        rec_links[rec_name].push(std::make_tuple(name, FLNK));
+                        rec_links[rec_name].push(std::make_tuple(name, FLNK, NO_PROP));
 
                         if (rec_vert.find(name) == rec_vert.end())
                             rec_vert[name] = vert_num++;
@@ -74,9 +74,9 @@ int EpicsRecordChain::load_rec_vert(q_token q_state)
                     {
                         std::string delim = " ";
                         std::string token, name_copy;
+                        name += " ";
 
-                        bool is_pp = false;
-                        size_t pos = 0, i = 0;
+                        size_t prop = 0, pos = 0, i = 0;
                         
                         while ((pos = name.find(delim)) != std::string::npos) 
                         {
@@ -87,15 +87,18 @@ int EpicsRecordChain::load_rec_vert(q_token q_state)
                                 name_copy = token;
 
                             if (token == "PP")
-                            {
-                                is_pp = true;
-                                break;
-                            }
+                                prop |= PP;
+                            else if (token == "CA")
+                                prop |= CA;
+                            else if (token == "CPP")
+                                prop |= CPP;
+                            else if (token == "CP")
+                                prop |= CP;;
                         }
                         
-                        if (is_pp || name.substr(0, 2) == "PP")
+                        if (prop)
                         {
-                            rec_links[rec_name].push(std::make_tuple(name_copy, lt));
+                            rec_links[rec_name].push(std::make_tuple(name_copy, lt, prop));
                             lt = NO_LINK;
 
                             if (rec_vert.find(name_copy) == rec_vert.end())
@@ -112,32 +115,6 @@ int EpicsRecordChain::load_rec_vert(q_token q_state)
     return vert_num;
 }
 
-std::vector<std::vector<int>> EpicsRecordChain::init_adj_mat(int vert_num)
-{
-    std::vector<int> one_d_vec(vert_num, 0);
-    std::vector<std::vector<int>> adj_mat;
-
-    for (int i = 0; i < vert_num; i++)
-    {
-        adj_mat.push_back(one_d_vec);
-    }
-
-    return adj_mat;
-}
-
-bool EpicsRecordChain::is_start_chain(std::string vert_name)
-{
-    int vert_num = rec_vert[vert_name];
-
-    for (auto row : adj_mat)
-    {
-        if (row[vert_num])
-            return false;
-    }
-
-    return true;
-}
-
 void EpicsRecordChain::print_adj_mat(void)
 {     
     std::cout << "Legend...\n";
@@ -151,7 +128,7 @@ void EpicsRecordChain::print_adj_mat(void)
     {
         for (auto elem : row) 
         {
-            std::cout << elem << " ";
+            std::cout << std::get<0>(elem) << "," << std::get<1>(elem);
         }
 
         std::cout << std::endl;
@@ -181,25 +158,45 @@ void EpicsRecordChain::create_visual_graph(std::string fn)
                 shape_name.insert(NEWLINE_SHAPE + 1, 1, 'n');
             }
 
-            fout << it->second << "[label=\"" << rec_type << "\n" << shape_name << "\" shape=box];\n";
+            fout << it->second << "[label=\"" << rec_type << "\n" << shape_name << "\"";
+            
+            if (rec_type == "OUTSIDE_DB")
+                fout << "shape=box, style=filled, fillcolor=bisque]\n";
+            else
+                fout << "shape=box]\n";
         }
 
-        int i = 0;
-
-        for (i = 0; i < adj_mat.size(); i++) 
+        for (int i = 0; i < adj_mat.size(); i++) 
         {
             for (int j = 0; j < adj_mat[i].size(); j++) 
             {
-                if (adj_mat[i][j])
+                Link_Type lt = std::get<0>(adj_mat[i][j]);
+                int lp = std::get<1>(adj_mat[i][j]);
+
+                if (lt)
                 {
                     fout << i << "->" << j;
 
-                    if (adj_mat[i][j] == OUT)
-                        fout << "[ style=dotted color=red label=PP ]";
-                    else if (adj_mat[i][j] == INP)
-                        fout << "[ style=dotted color=blue label=PP ]";
+                    if (lt != FLNK)
+                    {
+                        if (lt == OUT)
+                            fout << "[ style=dotted color=red ";
+                        else if (lt == INP)
+                            fout << "[ style=dotted color=blue ";
 
-                    fout << ";\n";
+                        if (lp & PP)
+                            fout << "label=PP ];\n";
+                        if (lp & CA)
+                            fout << "label=CA ];\n";
+                        if (lp & CPP)
+                            fout << "label=CPP ];\n";
+                        if (lp & CP)
+                            fout << "label=CP ];\n";
+                    }
+                    else
+                    {
+                        fout << ";\n";
+                    }
                 }
             }
         }
@@ -215,7 +212,12 @@ EpicsRecordChain::EpicsRecordChain(void)
 EpicsRecordChain::EpicsRecordChain(q_token q_state)
 {
     n = load_rec_vert(q_state);
-    adj_mat = init_adj_mat(n);
+    std::vector<std::tuple<Link_Type, int>> temp(n, std::make_tuple(NO_LINK, NO_PROP));
+
+    for (int i = 0; i < n; i++)
+    {
+        adj_mat.push_back(temp);
+    }
 
     for (const auto& r : rec_links)
     {
@@ -225,17 +227,18 @@ EpicsRecordChain::EpicsRecordChain(q_token q_state)
             continue;
         
         int v1 = rec_vert.at(start);
-        std::queue<std::tuple<std::string, Link_Type>> temp = r.second;
+        std::queue<std::tuple<std::string, Link_Type, int>> temp = r.second;
 
         while (!temp.empty())
         {
             std::string rec_dest_name = std::get<0>(temp.front());
             Link_Type lt = std::get<1>(temp.front());
+            int lp = std::get<2>(temp.front());
 
             if (rec_vert.find(rec_dest_name) != rec_vert.end())
             {
                 int v2 = rec_vert.at(rec_dest_name);
-                adj_mat[v1][v2] = lt;
+                adj_mat[v1][v2] = std::make_tuple(lt, lp);
             }
 
             temp.pop();
