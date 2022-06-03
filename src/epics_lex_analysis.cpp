@@ -11,7 +11,7 @@
 
 static bool is_math_op(char next)
 {
-    const std::string math_op = "()e-+*/%^><=&|!~?:., ";
+    const std::string math_op = "{}()e-+*/%^><=&|!~?:., ";
 
     for (auto c : math_op)
     {

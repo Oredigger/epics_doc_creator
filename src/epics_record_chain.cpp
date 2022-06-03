@@ -55,7 +55,7 @@ int EpicsRecordChain::load_rec_vert(q_token q_state)
                     lt = FLNK;
                 else if (name.substr(0, 3) == "LNK" || name.substr(0, 3) == "OUT")
                     lt = OUT;
-                else if (name.substr(0, 3) == "INP" || name.substr(0, 3) == "DOL" || name.substr(0, 4) == "SELL")
+                else if (name.substr(0, 2) == "IN" || name.substr(0, 3) == "DOL" || name.substr(0, 4) == "SELL")
                     lt = INP;
                 else
                     lt = NO_LINK;
