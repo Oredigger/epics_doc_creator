@@ -98,7 +98,11 @@ int EpicsRecordChain::load_rec_vert(q_token q_state)
                         
                         if (prop)
                         {
-                            rec_links[rec_name].push(std::make_tuple(name_copy, lt, prop));
+                            if (prop & CPP || prop & CP)
+                                rec_links[name_copy].push(std::make_tuple(rec_name, lt, prop));
+                            else
+                                rec_links[rec_name].push(std::make_tuple(name_copy, lt, prop));
+                            
                             lt = NO_LINK;
 
                             if (rec_vert.find(name_copy) == rec_vert.end())

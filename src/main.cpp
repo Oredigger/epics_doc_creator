@@ -2,6 +2,7 @@
 #include <cstring>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <utility>
 
@@ -15,7 +16,7 @@
 
 int main(int argc, char *argv[])
 { 
-    /*if (argc <= 1)
+    if (argc <= 1)
         return EXIT_FAILURE;
 
     // If read_files is set to be a 1, then read in the input files.
@@ -41,12 +42,29 @@ int main(int argc, char *argv[])
         }
     }
 
+    std::string r_str;
+
     while (!input_names.empty())
     {
-        
-    }*/
+        std::ifstream fin(input_names.front());
 
-    EpicsDbFileLexAnalysis x("test_files/example3.db");
+        if (fin.good())
+        {
+            std::ostringstream os;
+
+            if (os.good())
+            {
+                os << fin.rdbuf() << std::endl;
+                r_str += os.str();
+            }
+        }
+
+        input_names.pop();
+        fin.close();
+    }
+
+    EpicsDbFileLexAnalysis x;
+    x.set_r_str(r_str);
     x.parse_dft();
 
     q_token q_state = x.get_q_state();
@@ -54,7 +72,7 @@ int main(int argc, char *argv[])
     
     EpicsRecordChain y(q_state);
     y.print_adj_mat();
-    y.create_visual_graph("hmm.dot");
+    y.create_visual_graph(output_name);
     
     //EpicsLatexGen gen("test_files/example.db", q_state);
     //gen.save_as_file("test");

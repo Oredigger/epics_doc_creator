@@ -34,7 +34,7 @@ class EpicsLexAnalysis
         EpicsLexAnalysis(void);
 
         q_token get_q_state(void);
-        void prep_r_str(void);
+        void set_r_str(std::string s);
         void print_q_state(void);
         virtual void parse_dft(void) = 0;
         

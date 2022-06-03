@@ -10,6 +10,5 @@ void replace_all_char(std::string &r_str, char c, char s);
 void replace_all_substr(std::string &r_str, std::string target, std::string replace);
 
 std::queue<size_t> get_all_char_pos(std::string r_str, char c);
-std::string prep_r_str(std::string r_str);
 
 #endif

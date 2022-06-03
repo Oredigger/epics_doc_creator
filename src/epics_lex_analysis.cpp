@@ -147,9 +147,7 @@ static std::string state_2_str(lex_states state)
     }
 }
 
-EpicsLexAnalysis::EpicsLexAnalysis(void){}
-
-void EpicsLexAnalysis::prep_r_str(void)
+static std::string prep_r_str(std::string r_str)
 {
     remove_all_char(r_str, '\t');
     remove_all_char(r_str, '\r');
@@ -158,6 +156,7 @@ void EpicsLexAnalysis::prep_r_str(void)
     
     bool is_comment = false;
     size_t q_idx_0 = 0, q_idx_1 = 0;
+    std::string f_str;
 
     for (size_t i = 0; i < r_str.length(); i++)
     {
@@ -194,7 +193,10 @@ void EpicsLexAnalysis::prep_r_str(void)
     }
 
     f_str += ' ';
+    return f_str;
 }
+
+EpicsLexAnalysis::EpicsLexAnalysis(void){}
 
 EpicsLexAnalysis::EpicsLexAnalysis(std::string fn)
 {
@@ -204,8 +206,7 @@ EpicsLexAnalysis::EpicsLexAnalysis(std::string fn)
         q_state.swap(empty);
     }
 
-    std::ifstream fin;
-    fin.open(fn, std::ifstream::in);
+    std::ifstream fin(fn);
 
     if (fin.good())
     {
@@ -218,13 +219,19 @@ EpicsLexAnalysis::EpicsLexAnalysis(std::string fn)
         }
     }
 
-    prep_r_str();
+    f_str = prep_r_str(r_str);
     fin.close();
 }
 
 q_token EpicsLexAnalysis::get_q_state(void)
 {
     return q_state;
+}
+
+void EpicsLexAnalysis::set_r_str(std::string s)
+{
+    r_str = s;
+    f_str = prep_r_str(r_str);
 }
 
 void EpicsLexAnalysis::print_q_state(void)
