@@ -23,8 +23,8 @@ class EpicsRecordChain
         int n;
         std::map<std::string, int> rec_vert;
         std::map<std::string, std::string> rec_types;
-        std::map<std::string, std::queue<std::tuple<std::string, Link_Type, int>>> rec_links;
-        std::vector<std::vector<std::tuple<Link_Type, int>>> adj_mat;
+        std::map<std::string, std::queue<std::tuple<std::string, Link_Type, int, std::string>>> rec_links;
+        std::vector<std::vector<std::tuple<Link_Type, int, std::string>>> adj_mat;
 };
 
 #endif
